@@ -26,6 +26,7 @@ import com.moon_o.jagalchi.jagalchi.util.ImageCombineProcessor;
 import com.moon_o.jagalchi.jagalchi.util.ImageCombineUtil;
 import com.moon_o.jagalchi.jagalchi.util.ScreenshotListener;
 import com.moon_o.jagalchi.jagalchi.util.ScreenshotObserver;
+import com.moon_o.jagalchi.jagalchi.util.ToastWrapper;
 
 /**
  * Created by mucha on 16. 4. 21.
@@ -42,6 +43,12 @@ public class CaptureService extends Service implements ScreenshotListener{
     private Notification notification;
     private NotificationManager notificationManager;
 
+    private Intent notiSlideIntent;
+
+    public void notiSlideUp() {
+        notiSlideIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        this.sendBroadcast(notiSlideIntent);
+    }
 
     @Override
     public void onCreate() {
@@ -52,28 +59,74 @@ public class CaptureService extends Service implements ScreenshotListener{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
+        Log.e(TAG, intent.getAction());
 
         if(action.equals(NotificationAction.START_ACTION.getString())) {
             init();
+
         } else if(action.equals(NotificationAction.STOP_ACTION.getString())) {
             stopForeground(true);
             stopSelf();
 
         } else if(action.equals(NotificationAction.RESET_ACTION.getString())) {
-            showComplexNotification("리셋을 완료하였습니다.");
-            notificationManager.notify(NOTIFICATION_ID, notification);
-        } else if(action.equals(NotificationAction.GALLERY_ACTION.getString())) {
 
-            Toast.makeText(getApplicationContext(), "갤러리를 불러오는데 성공.", Toast.LENGTH_SHORT).show();
+            if (captureCount == 0) {
+                ToastWrapper.makeText(getApplicationContext(), R.string.capture_no_content).show();
+                notiSlideUp();
+                return START_STICKY;
+            }
+            if (!imageCombineUtil.fileDelete(imageCombineUtil.getPath())) {
+                ToastWrapper.makeText(getApplicationContext(), R.string.reset_fail).show();
+            } else {
+                captureCount = 0;
+                ToastWrapper.makeText(getApplicationContext(), R.string.reset_success).show();
+            }
+
+            showComplexNotification(null);
+            notificationManager.notify(NOTIFICATION_ID, notification);
+            notiSlideUp();
+
+        } else if(action.equals(NotificationAction.SAVE_ACTION.getString())) {
+
+            if(captureCount == 0) {
+                ToastWrapper.makeText(getApplicationContext(), R.string.capture_no_content).show();
+                notiSlideUp();
+                return START_STICKY;
+            }
+
+            if (!imageCombineUtil.mediaStoreInsertImage(
+                    getContentResolver(),
+                    imageCombineUtil.getPath(),
+                    imageCombineUtil.getName()))
+                ToastWrapper.makeText(getApplicationContext(), R.string.save_fail).show();
+            else
+                ToastWrapper.makeText(getApplicationContext(), R.string.save_success).show();
+
+            notiSlideUp();
 
         } else if(action.equals(NotificationAction.SHARE_ACTION.getString())) {
+            if(captureCount == 0) {
+                ToastWrapper.makeText(getApplicationContext(), R.string.capture_no_content).show();
+                notiSlideUp();
+                return START_STICKY;
+            }
 
-            Log.e(TAG, "share event");
-            Toast.makeText(this, "Share event", Toast.LENGTH_SHORT).show();
+            Uri screenshotUri = Uri.parse(ImageCombineUtil.getInstance().getPath());
+
+            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+            sharingIntent.setType("image/jpeg");
+            sharingIntent.putExtra(Intent.EXTRA_STREAM, screenshotUri);
+            Intent chooserintent = Intent.createChooser(sharingIntent, "Share Image");
+            chooserintent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(chooserintent);
+
+            showComplexNotification(getResources().getString(R.string.share_string));
+            notificationManager.notify(NOTIFICATION_ID, notification);
+            notiSlideUp();
         }
 
         return START_STICKY;
-        
+
     }
 
     @Override
@@ -93,7 +146,7 @@ public class CaptureService extends Service implements ScreenshotListener{
         observer =  new ScreenshotObserver(this);
         observer.start();
 
-        showComplexNotification("10to1 - 스크린샷을 모아 공유해 보세요");
+        showComplexNotification(getResources().getString(R.string.init_string));
     }
 
     private void showComplexNotification(String tickerText) {
@@ -111,13 +164,13 @@ public class CaptureService extends Service implements ScreenshotListener{
         resetIntent.setAction(NotificationAction.RESET_ACTION.getString());
         PendingIntent resetPending = PendingIntent.getService(this, 0 , resetIntent, 0);
 
-        Intent galleryIntent = new Intent(this, CaptureService.class);
-        galleryIntent.setAction(NotificationAction.GALLERY_ACTION.getString());
-        PendingIntent galleryPending = PendingIntent.getService(this, 0, galleryIntent, 0);
+        Intent saveIntent = new Intent(this, CaptureService.class);
+        saveIntent.setAction(NotificationAction.SAVE_ACTION.getString());
+        PendingIntent savePending = PendingIntent.getService(this, 0, saveIntent, 0);
 
         Intent shareIntent = new Intent(this, CaptureService.class);
         shareIntent.setAction(NotificationAction.SHARE_ACTION.getString());
-        PendingIntent sharePending = PendingIntent.getService(this, 0, shareIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent sharePending = PendingIntent.getService(this, 0, shareIntent, 0);
 
         if(notificationManager == null && notificationView == null && notification == null) {
 
@@ -133,15 +186,19 @@ public class CaptureService extends Service implements ScreenshotListener{
                 .setContentIntent(mainPending)
                 .setSmallIcon(android.R.drawable.ic_input_get)
                 .setNumber(captureCount)
+                .setPriority(Notification.PRIORITY_MAX)
+                .setDefaults(Notification.DEFAULT_VIBRATE
+                    | Notification.DEFAULT_LIGHTS)
                 .build();
 
         notificationView.setOnClickPendingIntent(R.id.notiExit, stopPending);
         notificationView.setOnClickPendingIntent(R.id.notiReset, resetPending);
         notificationView.setOnClickPendingIntent(R.id.notiShare, sharePending);
-        notificationView.setOnClickPendingIntent(R.id.notigallary, galleryPending);
+        notificationView.setOnClickPendingIntent(R.id.notigallary, savePending);
 
-        notificationView.setImageViewResource(R.id.notiExit, android.R.drawable.ic_menu_delete);
-        notificationView.setImageViewResource(R.id.notiReset, android.R.drawable.ic_menu_crop);
+
+        notificationView.setImageViewResource(R.id.notiExit, android.R.drawable.ic_menu_help);
+        notificationView.setImageViewResource(R.id.notiReset, android.R.drawable.ic_menu_delete);
         notificationView.setImageViewResource(R.id.notiShare, android.R.drawable.ic_menu_set_as);
         notificationView.setImageViewResource(R.id.notigallary, android.R.drawable.ic_menu_camera);
         notificationView.setTextViewText(R.id.notiText, captureCount+"");
@@ -155,31 +212,19 @@ public class CaptureService extends Service implements ScreenshotListener{
 
         switch(captureCount) {
             case 1:
-                new ImageCombineProcessor(getContentResolver(), uri, true).execute();
+                new ImageCombineProcessor(getApplicationContext(),imageCombineUtil.pathCreat(), null, uri.getPath(), true).execute();
                 break;
             default:
-                new ImageCombineProcessor(getContentResolver(), uri, false).execute();
+                String combinedPath = imageCombineUtil.getPath();
+                new ImageCombineProcessor(getApplicationContext(), imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
                 break;
         }
 
-
-//        if(captureCount == 1)
-//            imageCombineUtil.bitmapFileWrite(
-//                    imageCombineUtil.pathCreat(),
-//                    BitmapFactory.decodeFile(uri.getPath()));
-//        else {
-//            String path = imageCombineUtil.getPath();
-//            imageCombineUtil.bitmapCombine(
-//                    imageCombineUtil.pathCreat(),
-//                    BitmapFactory.decodeFile(path),
-//                    BitmapFactory.decodeFile(uri.getPath()));
-//
-//            File deleteBeforeFile = new File(path);
-//            deleteBeforeFile.delete();
-//        }
-
-        showComplexNotification("공유하시려면 공유 아이콘을 눌러주세요");
+        showComplexNotification(getResources().getString(R.string.share_pressbtn_pless));
         notificationManager.notify(NOTIFICATION_ID, notification);
+        notiSlideUp();
     }
+
+
 
 }

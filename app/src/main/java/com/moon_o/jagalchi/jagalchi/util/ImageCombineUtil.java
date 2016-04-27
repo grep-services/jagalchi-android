@@ -29,6 +29,7 @@ public class ImageCombineUtil {
     public final String MEDIA_EXTERNAL_PATH = MediaStore.Images.Media.EXTERNAL_CONTENT_URI.getPath();
     private String name;
     private String path;
+    private String combinedPath;
 
     private ImageCombineUtil() {}
 
@@ -54,6 +55,14 @@ public class ImageCombineUtil {
         this.name = name;
     }
 
+    public String getCombinedPath() {
+        return combinedPath;
+    }
+
+    public void setCombinedPath(String combinedPath) {
+        this.combinedPath = combinedPath;
+    }
+
     public String pathCreat() {
         setName("TenToOne_"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()) + ".jpeg");
         setPath(BASE_PATH + name);
@@ -73,8 +82,13 @@ public class ImageCombineUtil {
         }
     }
 
-    public void fileDelete(String path) {
-        new File(path).delete();
+    public boolean fileDelete(String path) {
+        try {
+            new File(path).delete();
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     public void bitmapFileWrite(String path, Bitmap bitmap) {
@@ -99,38 +113,7 @@ public class ImageCombineUtil {
         }
     }
 
-    public void bitmapCombine(String combinePath, Bitmap backupBitmap, Bitmap capturedBitmap) {
-        fileCreate(null, new File(combinePath));
-        Bitmap backupCopyBitmap, capturedCopyBitmap, combineBitmap;
-        backupCopyBitmap = backupBitmap.copy(Bitmap.Config.ARGB_8888, true);
-        capturedCopyBitmap = capturedBitmap.copy(Bitmap.Config.ARGB_8888, true);
-
-        int w;
-        if(backupCopyBitmap.getWidth() > capturedCopyBitmap.getWidth())
-            w = backupCopyBitmap.getWidth();
-        else
-            w = capturedCopyBitmap.getWidth();
-
-        int h = backupCopyBitmap.getHeight() + capturedCopyBitmap.getHeight();
-
-
-        combineBitmap = Bitmap.createScaledBitmap(backupCopyBitmap, w, h, true);
-//        Bitmap(w, h, Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(combineBitmap);
-        canvas.drawBitmap(backupCopyBitmap, 0, 0, null);
-        canvas.drawBitmap(capturedCopyBitmap, 0, backupCopyBitmap.getHeight(), null);
-
-        bitmapFileWrite(combinePath, combineBitmap);
-
-        backupCopyBitmap.recycle();
-        capturedCopyBitmap.recycle();
-        backupBitmap.recycle();
-        capturedBitmap.recycle();
-        combineBitmap.recycle();
-    }
-
-    public void mediaStoreInsertImage(ContentResolver contentResolver, String imagePath, String imageName) {
+    public boolean mediaStoreInsertImage(ContentResolver contentResolver, String imagePath, String imageName) {
         try {
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.TITLE, imageName);
@@ -140,10 +123,13 @@ public class ImageCombineUtil {
             contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            return true;
         }
     }
 
-    public void mediaStoreDeleteImage(ContentResolver contentResolver, String path) {
+    public boolean mediaStoreDeleteImage(ContentResolver contentResolver, String path) {
         try {
             String[] retCol = {MediaStore.Images.Media._ID};
             Cursor cur = contentResolver.query(
@@ -164,6 +150,42 @@ public class ImageCombineUtil {
             contentResolver.delete(uri, null, null);
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            return true;
         }
     }
+
+    public void bitmapCombine(String combinedPath, String combinePath, Bitmap backupBitmap, Bitmap capturedBitmap) {
+        setCombinedPath(combinedPath);
+        fileCreate(null, new File(combinePath));
+        Bitmap backupCopyBitmap, capturedCopyBitmap, combineBitmap;
+        backupCopyBitmap = backupBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        capturedCopyBitmap = capturedBitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+        int w;
+        if(backupCopyBitmap.getWidth() > capturedCopyBitmap.getWidth())
+            w = backupCopyBitmap.getWidth();
+        else
+            w = capturedCopyBitmap.getWidth();
+
+        int h = backupCopyBitmap.getHeight() + capturedCopyBitmap.getHeight();
+
+
+        combineBitmap = Bitmap.createScaledBitmap(backupCopyBitmap, w, h, true);
+
+        Canvas canvas = new Canvas(combineBitmap);
+        canvas.drawBitmap(backupCopyBitmap, 0, 0, null);
+        canvas.drawBitmap(capturedCopyBitmap, 0, backupCopyBitmap.getHeight(), null);
+
+        bitmapFileWrite(combinePath, combineBitmap);
+
+        backupCopyBitmap.recycle();
+        capturedCopyBitmap.recycle();
+        backupBitmap.recycle();
+        capturedBitmap.recycle();
+        combineBitmap.recycle();
+    }
+
+
 }
