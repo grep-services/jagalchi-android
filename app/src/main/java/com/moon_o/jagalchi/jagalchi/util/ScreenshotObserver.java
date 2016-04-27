@@ -12,7 +12,7 @@ import android.util.Log;
 import java.io.File;
 
 public class ScreenshotObserver extends FileObserver{
-    private static final String PATH = Environment.getExternalStorageDirectory().toString() + "/Pictures/Screenshots/";
+    public static final String PATH = Environment.getExternalStorageDirectory().toString() + "/Pictures/Screenshots/";
 
     private ScreenshotListener mListener;
     private String mLastTakenPath;
@@ -29,20 +29,25 @@ public class ScreenshotObserver extends FileObserver{
         super(PATH, FileObserver.CLOSE_WRITE);
     }
 
-    public void setWatcher(ScreenshotListener listener) {
-        mListener = listener;
-    }
+//    public void setWatcher(ScreenshotListener listener) {
+//        mListener = listener;
+//    }
 
     @Override
-    public void onEvent(int event, String path) {
+    public void onEvent(int event, String name) {
 
-        if (path == null || event != FileObserver.CLOSE_WRITE)
-            Log.e("ScreenshotObserver", "System ERROR");
-        else if (mLastTakenPath != null && path.equalsIgnoreCase(mLastTakenPath))
-            Log.e("ScreenshotObserver", "Not support same name");
+
+        if (name == null || event != FileObserver.CLOSE_WRITE) {
+            Log.e("ScreenshotObserver", "Application EXIT");
+        }
+//        else if (mLastTakenPath != null && name.equalsIgnoreCase(mLastTakenPath)) {
+//            Log.e("ScreenshotObserver", "Not support same name");
+//            Log.e("ScreenshotObserver", name);
+//        }
         else {
-            mLastTakenPath = path;
-            File file = new File(PATH+path);
+            Log.e("ScreenshotObserver", name);
+            mLastTakenPath = name;
+            File file = new File(PATH+name);
             mListener.onScreenshotTaken(Uri.fromFile(file));
         }
 
