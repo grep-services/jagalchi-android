@@ -9,9 +9,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.moon_o.jagalchi.R;
@@ -25,6 +28,9 @@ import com.moon_o.jagalchi.jagalchi.util.ToastWrapper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mucha on 16. 4. 21.
@@ -34,6 +40,7 @@ public class CaptureService extends Service implements ScreenshotListener{
     private static final int NOTIFICATION_ID = 1;
     private ScreenshotObserver observer;
     private ImageCombineUtil imageCombineUtil;
+    private Map<String, PendingIntent> pendingMap = new HashMap<>();
     private int captureCount;
 
     private RemoteViews notificationView;
@@ -41,11 +48,6 @@ public class CaptureService extends Service implements ScreenshotListener{
     private NotificationManager notificationManager;
 
     private Intent notiSlideIntent;
-
-    public void notiSlideUp() {
-        notiSlideIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-        this.sendBroadcast(notiSlideIntent);
-    }
 
     @Override
     public void onCreate() {
@@ -58,6 +60,8 @@ public class CaptureService extends Service implements ScreenshotListener{
         String action = intent.getAction();
 
         if(action.equals(NotificationAction.START_ACTION.getString())) {
+            notiSlideUp();
+            ToastWrapper.showText(this, getResources().getString(R.string.init_string));
             init();
 
         } else if(action.equals(NotificationAction.STOP_ACTION.getString())) {
@@ -132,32 +136,6 @@ public class CaptureService extends Service implements ScreenshotListener{
 
     }
 
-    public Bitmap decodeFile(File f) {
-        try {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds=true;
-
-            BitmapFactory.decodeStream(new FileInputStream(f), null, options);
-            final int SIZE=70;
-            int width = options.outWidth, height = options.outHeight;
-            int scale = 1;
-            while(true) {
-                if(width/2<SIZE || height/2<SIZE)
-                    break;
-                width/=2;
-                height/=2;
-                scale++;
-            }
-
-            BitmapFactory.Options o2 = new BitmapFactory.Options();
-            o2.inSampleSize = scale;
-            return BitmapFactory.decodeStream(new FileInputStream(f), null, o2);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -170,6 +148,31 @@ public class CaptureService extends Service implements ScreenshotListener{
         return null;
     }
 
+
+    @Override
+    public void onScreenshotTaken(Uri uri) {
+        captureCount++;
+
+        switch(captureCount) {
+            case 1:
+                new ImageCombineProcessor(imageCombineUtil.pathCreat(), null, uri.getPath(), true).execute();
+                break;
+            default:
+                String combinedPath = imageCombineUtil.getPath();
+                new ImageCombineProcessor(imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
+                break;
+        }
+
+        showComplexNotification(getResources().getString(R.string.share_pressbtn_pless));
+        notificationManager.notify(NOTIFICATION_ID, notification);
+        notiSlideUp();
+    }
+
+    public void notiSlideUp() {
+        notiSlideIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        this.sendBroadcast(notiSlideIntent);
+    }
+
     private void init() {
         imageCombineUtil = ImageCombineUtil.getInstance();
         observer =  new ScreenshotObserver(this);
@@ -178,8 +181,33 @@ public class CaptureService extends Service implements ScreenshotListener{
         showComplexNotification(getResources().getString(R.string.init_string));
     }
 
-    private void showComplexNotification(String tickerText) {
+    private RemoteViews buildNotificationItem(Map<String, PendingIntent> pendingMap) {
+        if (pendingMap.isEmpty())
+            throw new NullPointerException("PendingIntent elements is null");
 
+        RemoteViews view = new RemoteViews(getPackageName(), R.layout.notification_layout);
+
+        view.setOnClickPendingIntent(R.id.noti_close_image, pendingMap.get(NotificationAction.STOP_ACTION.getString()));
+        view.setOnClickPendingIntent(R.id.noti_delete_image, pendingMap.get(NotificationAction.RESET_ACTION.getString()));
+        view.setOnClickPendingIntent(R.id.noti_save_image, pendingMap.get(NotificationAction.SAVE_ACTION.getString()));
+
+        view.setImageViewResource(R.id.noti_close_image, R.mipmap.close);
+        view.setImageViewResource(R.id.noti_delete_image, R.mipmap.delete);
+        view.setImageViewResource(R.id.noti_save_image, R.mipmap.save);
+        view.setTextViewText(R.id.noti_capture_count_text, captureCount+getResources().getString(R.string.capture_count));
+
+//        view.setOnClickPendingIntent(R.id.notiExit, pendingMap.get(NotificationAction.STOP_ACTION.getString()));
+//        view.setOnClickPendingIntent(R.id.notiReset, pendingMap.get(NotificationAction.RESET_ACTION.getString()));
+//        view.setOnClickPendingIntent(R.id.notiShare, pendingMap.get(NotificationAction.SAVE_ACTION.getString()));
+//
+//        view.setImageViewResource(R.id.notiExit, android.R.drawable.ic_menu_close_clear_cancel);
+//        view.setImageViewResource(R.id.notiReset, android.R.drawable.ic_menu_delete);
+//        view.setImageViewResource(R.id.notiShare, android.R.drawable.ic_menu_save);
+//        view.setTextViewText(R.id.notiText, captureCount+"");
+        return view;
+    }
+
+    private void setPendingIntent() {
         Intent notifinationIntent = new Intent(this, MainActivity.class);
         notifinationIntent.setAction(NotificationAction.MAIN_ACTION.getString());
         notifinationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -201,58 +229,42 @@ public class CaptureService extends Service implements ScreenshotListener{
 //        shareIntent.setAction(NotificationAction.SHARE_ACTION.getString());
 //        PendingIntent sharePending = PendingIntent.getService(this, 0, shareIntent, 0);
 
-        if(notificationManager == null && notificationView == null && notification == null) {
+        pendingMap.put(NotificationAction.MAIN_ACTION.getString(), mainPending);
+        pendingMap.put(NotificationAction.STOP_ACTION.getString(), stopPending);
+        pendingMap.put(NotificationAction.RESET_ACTION.getString(), resetPending);
+        pendingMap.put(NotificationAction.SAVE_ACTION.getString(), savePending);
+    }
 
+    private void showComplexNotification(String tickerText) {
+        if(pendingMap.isEmpty())
+            setPendingIntent();
+
+        if(notificationManager == null)
             notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.notification_layout);
-        }
+        notificationView = null;
+        notificationView = buildNotificationItem(pendingMap);
 
         notification = null;
-
         notification = new NotificationCompat.Builder(this)
                 .setTicker(tickerText)
-                .setContent(notificationView)
-                .setContentIntent(mainPending)
-                .setSmallIcon(android.R.drawable.ic_input_get)
+//                .setContent(notificationView)
+                .setContentIntent(pendingMap.get(NotificationAction.MAIN_ACTION.getString()))
+                .setSmallIcon(R.mipmap.notification)
                 .setNumber(captureCount)
-//                .setPriority(Notification.PRIORITY_HIGH)
                 .setDefaults(Notification.DEFAULT_VIBRATE
-                    | Notification.DEFAULT_LIGHTS)
+                        | Notification.DEFAULT_LIGHTS)
+                .setPriority(setPriority())
                 .build();
-
-        notificationView.setOnClickPendingIntent(R.id.notiExit, stopPending);
-        notificationView.setOnClickPendingIntent(R.id.notiReset, resetPending);
-//        notificationView.setOnClickPendingIntent(R.id.notiShare, sharePending);
-        notificationView.setOnClickPendingIntent(R.id.notigallary, savePending);
-
-
-        notificationView.setImageViewResource(R.id.notiExit, android.R.drawable.ic_menu_help);
-        notificationView.setImageViewResource(R.id.notiReset, android.R.drawable.ic_menu_delete);
-        notificationView.setImageViewResource(R.id.notiShare, android.R.drawable.ic_menu_set_as);
-        notificationView.setImageViewResource(R.id.notigallary, android.R.drawable.ic_menu_camera);
-        notificationView.setTextViewText(R.id.notiText, captureCount+"");
 
         startForeground(NOTIFICATION_ID, notification);
     }
 
-    @Override
-    public void onScreenshotTaken(Uri uri) {
-        captureCount++;
-
-        switch(captureCount) {
-            case 1:
-                new ImageCombineProcessor(imageCombineUtil.pathCreat(), null, uri.getPath(), true).execute();
-                break;
-            default:
-                String combinedPath = imageCombineUtil.getPath();
-                new ImageCombineProcessor(imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
-                break;
-        }
-
-
-        showComplexNotification(getResources().getString(R.string.share_pressbtn_pless));
-        notificationManager.notify(NOTIFICATION_ID, notification);
-        notiSlideUp();
+    private int setPriority() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
+            return Notification.PRIORITY_HIGH;
+        else
+            return Notification.PRIORITY_DEFAULT;
     }
+
 
 }

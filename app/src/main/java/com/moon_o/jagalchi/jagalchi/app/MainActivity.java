@@ -19,7 +19,6 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
         Intent service = new Intent(MainActivity.this, CaptureService.class);
         service.setAction(NotificationAction.START_ACTION.getString());
         startService(service);
