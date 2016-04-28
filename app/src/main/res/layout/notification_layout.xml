@@ -55,26 +55,26 @@
 
     <ImageView
         android:id="@+id/noti_close_image"
-        android:layout_width="48px"
-        android:layout_height="48px"
+        android:layout_width="72px"
+        android:layout_height="72px"
         android:layout_alignParentRight="true"
         android:layout_marginRight="5dp"
         android:scaleType="fitXY"/>
 
     <ImageView
         android:id="@+id/noti_save_image"
+        android:layout_width="128px"
+        android:layout_height="128px"
         android:layout_marginRight="30dp"
-        android:layout_width="96px"
-        android:layout_height="96px"
         android:layout_toLeftOf="@+id/noti_delete_image"
         android:scaleType="fitXY"/>
 
 
     <ImageView
         android:id="@+id/noti_delete_image"
+        android:layout_width="128px"
+        android:layout_height="128px"
         android:layout_marginRight="30dp"
-        android:layout_width="96px"
-        android:layout_height="96px"
         android:layout_toLeftOf="@id/noti_close_image"
         android:scaleType="fitXY"/>
 

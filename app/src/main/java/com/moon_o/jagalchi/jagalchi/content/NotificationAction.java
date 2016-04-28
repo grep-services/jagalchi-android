@@ -9,6 +9,7 @@ public enum NotificationAction {
     STOP_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.stop"),
     RESET_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.reset"),
     SAVE_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.save"),
+    EXCEPTION_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.exception"),
     SHARE_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.share")
     ;
 

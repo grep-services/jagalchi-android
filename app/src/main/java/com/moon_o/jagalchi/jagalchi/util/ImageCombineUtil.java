@@ -119,6 +119,13 @@ public class ImageCombineUtil {
     }
 
     public boolean mediaStoreInsertImage(ContentResolver contentResolver, String imagePath, String imageName) {
+        if(!new File(imagePath).exists())
+            try {
+                throw new FileNotFoundException("Image Not Found");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
         try {
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.TITLE, imageName);
@@ -177,7 +184,7 @@ public class ImageCombineUtil {
         int h = backupCopyBitmap.getHeight() + capturedCopyBitmap.getHeight();
 
 
-        combineBitmap =Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        combineBitmap =Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_4444);
 //                createScaledBitmap(backupCopyBitmap, w, h, true);
 
         Canvas canvas = new Canvas(combineBitmap);
