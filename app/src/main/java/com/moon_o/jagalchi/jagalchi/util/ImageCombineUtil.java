@@ -6,11 +6,16 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -64,7 +69,7 @@ public class ImageCombineUtil {
     }
 
     public String pathCreat() {
-        setName("TenToOne_"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()) + ".jpeg");
+        setName("TenToOne_"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()) + ".jpg");
         setPath(BASE_PATH + name);
         return path;
     }
@@ -118,7 +123,7 @@ public class ImageCombineUtil {
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.TITLE, imageName);
             values.put(MediaStore.Images.Media.DESCRIPTION, "Created by TenToOne");
-            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
             values.put(MediaStore.Images.ImageColumns.DATA, imagePath);
             contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         } catch (Exception e) {
@@ -172,7 +177,8 @@ public class ImageCombineUtil {
         int h = backupCopyBitmap.getHeight() + capturedCopyBitmap.getHeight();
 
 
-        combineBitmap = Bitmap.createScaledBitmap(backupCopyBitmap, w, h, true);
+        combineBitmap =Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+//                createScaledBitmap(backupCopyBitmap, w, h, true);
 
         Canvas canvas = new Canvas(combineBitmap);
         canvas.drawBitmap(backupCopyBitmap, 0, 0, null);
@@ -186,6 +192,8 @@ public class ImageCombineUtil {
         capturedBitmap.recycle();
         combineBitmap.recycle();
     }
+
+
 
 
 }

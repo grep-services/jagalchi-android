@@ -1,29 +1,28 @@
 package com.moon_o.jagalchi.jagalchi.util;
 
-import android.content.ContentResolver;
-import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 /**
  * Created by mucha on 16. 4. 27.
  */
 public class ImageCombineProcessor extends AsyncTask<Void, Integer, Void> {
-    private Context context;
     private String combinePath;
     private String combinedPath;
     private String capturedPath;
     private boolean first = false;
     private ImageCombineUtil imageCombineUtil = ImageCombineUtil.getInstance();
+    private WindowManager wm;
 
-    public ImageCombineProcessor(Context context, String combinePath, String combinedPath, String capturedPath, boolean first) {
+    public ImageCombineProcessor(String combinePath, String combinedPath, String capturedPath, boolean first) {
         super();
-        this.context = context;
         this.combinePath = combinePath;
         this.combinedPath = combinedPath;
         this.capturedPath = capturedPath;
         this.first = first;
+        this.wm = wm;
     }
 
     public boolean isFirst() {
@@ -32,6 +31,8 @@ public class ImageCombineProcessor extends AsyncTask<Void, Integer, Void> {
 
     @Override
     protected Void doInBackground(Void... Voids) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inDensity = DisplayMetrics.DENSITY_HIGH;
         try {
             if (isFirst()) {
                 imageCombineUtil.bitmapFileWrite(
@@ -40,7 +41,6 @@ public class ImageCombineProcessor extends AsyncTask<Void, Integer, Void> {
                 );
 
             } else {
-
                 imageCombineUtil.bitmapCombine(
                         combinedPath,
                         combinePath,
@@ -56,9 +56,4 @@ public class ImageCombineProcessor extends AsyncTask<Void, Integer, Void> {
         return null;
     }
 
-    @Override
-    protected void onPostExecute(Void aVoid) {
-        ToastWrapper.showText(context, "캡처 성공하였습니다.");
-        super.onPostExecute(aVoid);
-    }
 }
