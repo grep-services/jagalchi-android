@@ -184,7 +184,7 @@ public class ImageCombineUtil {
         int h = backupCopyBitmap.getHeight() + capturedCopyBitmap.getHeight();
 
 
-        combineBitmap =Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_4444);
+        combineBitmap =Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 //                createScaledBitmap(backupCopyBitmap, w, h, true);
 
         Canvas canvas = new Canvas(combineBitmap);

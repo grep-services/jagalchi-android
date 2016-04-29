@@ -147,6 +147,18 @@ public class CaptureService extends Service implements ScreenshotListener{
             ToastWrapper.showText(getApplicationContext(), getResources().getString(R.string.exception_out_of_memory));
             showComplexNotification(getResources().getString(R.string.exception_out_of_memory));
             notificationManager.notify(NOTIFICATION_ID, notification);
+        } else if(action.equals(NotificationAction.GALLERY_ACTION.getString())) {
+
+            if (captureCount == 0) {
+                closeDialog();
+                ToastWrapper.makeText(getApplicationContext(), R.string.capture_no_content).show();
+                return START_STICKY;
+            }
+
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setDataAndType(Uri.parse("file://" + imageCombineUtil.getPath()), "image/*");
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
         }
 //        공유 기능 제외
 //        else if(action.equals(NotificationAction.SHARE_ACTION.getString())) {
@@ -281,10 +293,10 @@ public class CaptureService extends Service implements ScreenshotListener{
     }
 
     private void setPendingIntent() {
-        Intent notifinationIntent = new Intent(this, MainActivity.class);
-        notifinationIntent.setAction(NotificationAction.MAIN_ACTION.getString());
-        notifinationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent mainPending = PendingIntent.getActivity(this, 0, notifinationIntent, 0);
+
+        Intent galleryIntent = new Intent(this, CaptureService.class);
+        galleryIntent.setAction(NotificationAction.GALLERY_ACTION.getString());
+        PendingIntent galleryPending = PendingIntent.getService(this, 0, galleryIntent, 0);
 
         Intent stopIntent = new Intent(this, CaptureService.class);
         stopIntent.setAction(NotificationAction.STOP_ACTION.getString());
@@ -306,7 +318,7 @@ public class CaptureService extends Service implements ScreenshotListener{
 //        shareIntent.setAction(NotificationAction.SHARE_ACTION.getString());
 //        PendingIntent sharePending = PendingIntent.getService(this, 0, shareIntent, 0);
 
-        pendingMap.put(NotificationAction.MAIN_ACTION.getString(), mainPending);
+        pendingMap.put(NotificationAction.GALLERY_ACTION.getString(), galleryPending);
         pendingMap.put(NotificationAction.STOP_ACTION.getString(), stopPending);
         pendingMap.put(NotificationAction.RESET_ACTION.getString(), resetPending);
         pendingMap.put(NotificationAction.SAVE_ACTION.getString(), savePending);
@@ -326,7 +338,7 @@ public class CaptureService extends Service implements ScreenshotListener{
         notification = new NotificationCompat.Builder(this)
                 .setTicker(tickerText)
                 .setContent(notificationView)
-//                .setContentIntent(pendingMap.get(NotificationAction.MAIN_ACTION.getString()))
+                .setContentIntent(pendingMap.get(NotificationAction.GALLERY_ACTION.getString()))
                 .setSmallIcon(R.mipmap.notification)
                 .setNumber(captureCount)
                 .setDefaults(Notification.DEFAULT_VIBRATE
