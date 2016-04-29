@@ -18,8 +18,11 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.moon_o.jagalchi.R;
 import com.moon_o.jagalchi.jagalchi.content.NotificationAction;
+import com.moon_o.jagalchi.jagalchi.util.AnalyticsApplication;
 import com.moon_o.jagalchi.jagalchi.util.ImageCombineProcessor;
 import com.moon_o.jagalchi.jagalchi.util.ImageCombineUtil;
 import com.moon_o.jagalchi.jagalchi.util.ScreenshotListener;
@@ -41,6 +44,8 @@ import java.util.Objects;
  */
 public class CaptureService extends Service implements ScreenshotListener{
 
+    private Tracker tracker;
+
     private static final int NOTIFICATION_ID = 1;
     private ScreenshotObserver observer;
     private ImageCombineUtil imageCombineUtil;
@@ -53,7 +58,7 @@ public class CaptureService extends Service implements ScreenshotListener{
 
     @Override
     public void onCreate() {
-
+        tracker = ((AnalyticsApplication)getApplication()).getDefaultTracker();
         super.onCreate();
     }
 
@@ -63,11 +68,21 @@ public class CaptureService extends Service implements ScreenshotListener{
 
         if(action.equals(NotificationAction.START_ACTION.getString())) {
             init();
+            tracker.send(new HitBuilders.EventBuilder(
+                    getResources().getString(R.string.ga_category_run),
+                    getResources().getString(R.string.ga_action_run_start))
+                    .build());
+
             closeDialog();
             ToastWrapper.showText(this, getResources().getString(R.string.init_app));
             showComplexNotification(getResources().getString(R.string.init_app));
 
         } else if(action.equals(NotificationAction.STOP_ACTION.getString())) {
+            tracker.send(new HitBuilders.EventBuilder(
+                    getResources().getString(R.string.ga_category_run),
+                    getResources().getString(R.string.ga_action_run_stop))
+                    .build());
+
             stopForeground(true);
             stopSelf();
 
@@ -82,6 +97,12 @@ public class CaptureService extends Service implements ScreenshotListener{
                 ToastWrapper.makeText(getApplicationContext(), R.string.reset_fail).show();
             } else {
                 captureCount = 0;
+
+                tracker.send(new HitBuilders.EventBuilder(
+                        getResources().getString(R.string.ga_category_action),
+                        getResources().getString(R.string.ga_action_capture_delete))
+                        .build());
+
                 ToastWrapper.makeText(getApplicationContext(), R.string.reset_success).show();
             }
 
@@ -105,13 +126,24 @@ public class CaptureService extends Service implements ScreenshotListener{
                 ToastWrapper.makeText(getApplicationContext(), R.string.save_fail).show();
             }
             else {
+                tracker.send(new HitBuilders.EventBuilder(
+                        getResources().getString(R.string.ga_category_action),
+                        getResources().getString(R.string.ga_action_capture_save))
+                        .build());
+
                 closeDialog();
                 ToastWrapper.makeText(getApplicationContext(), R.string.save_success).show();
             }
         } else if(action.equals(NotificationAction.EXCEPTION_ACTION.getString())) {
-            recycle();
-            closeDialog();
 
+            tracker.send(new HitBuilders.EventBuilder(
+                    getResources().getString(R.string.ga_category_action),
+                    getResources().getString(R.string.ga_action_capture_oom_capture))
+                    .build());
+
+            recycle();
+
+            closeDialog();
             ToastWrapper.showText(getApplicationContext(), getResources().getString(R.string.exception_out_of_memory));
             showComplexNotification(getResources().getString(R.string.exception_out_of_memory));
             notificationManager.notify(NOTIFICATION_ID, notification);
@@ -169,6 +201,11 @@ public class CaptureService extends Service implements ScreenshotListener{
 
     @Override
     public void onScreenshotTaken(Uri uri) {
+        tracker.send(new HitBuilders.EventBuilder(
+                getResources().getString(R.string.ga_category_action),
+                getResources().getString(R.string.ga_action_capture_capturing))
+                .build());
+
         captureCount++;
 
         switch(captureCount) {
@@ -190,6 +227,13 @@ public class CaptureService extends Service implements ScreenshotListener{
     }
 
     private void init() {
+        int timeout_hour = 600;
+        tracker.setScreenName(getClass().getSimpleName());
+        tracker.setSessionTimeout(timeout_hour * 30);
+        tracker.send(new HitBuilders.ScreenViewBuilder()
+            .setNewSession()
+            .build());
+
         imageCombineUtil = ImageCombineUtil.getInstance();
         observer =  new ScreenshotObserver(this);
         observer.start();
