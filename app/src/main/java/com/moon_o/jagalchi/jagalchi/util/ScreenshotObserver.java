@@ -38,14 +38,13 @@ public class ScreenshotObserver extends FileObserver{
 
 
         if (name == null || event != FileObserver.CLOSE_WRITE) {
-            Log.e("ScreenshotObserver", "Application EXIT");
+//            Log.e("ScreenshotObserver", "Application EXIT");
         }
 //        else if (mLastTakenPath != null && name.equalsIgnoreCase(mLastTakenPath)) {
 //            Log.e("ScreenshotObserver", "Not support same name");
 //            Log.e("ScreenshotObserver", name);
 //        }
         else {
-            Log.e("ScreenshotObserver", name);
             mLastTakenPath = name;
             File file = new File(PATH+name);
             mListener.onScreenshotTaken(Uri.fromFile(file));

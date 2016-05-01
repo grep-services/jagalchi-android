@@ -6,17 +6,13 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -29,15 +25,12 @@ import com.moon_o.jagalchi.jagalchi.util.ScreenshotListener;
 import com.moon_o.jagalchi.jagalchi.util.ScreenshotObserver;
 import com.moon_o.jagalchi.jagalchi.util.ToastWrapper;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Stack;
 
 /**
  * Created by mucha on 16. 4. 21.
@@ -47,10 +40,13 @@ public class CaptureService extends Service implements ScreenshotListener{
     private Tracker tracker;
 
     private static final int NOTIFICATION_ID = 1;
+    private static final int CAPTURE_LIMIT = 5;
     private ScreenshotObserver observer;
     private ImageCombineUtil imageCombineUtil;
     private Map<String, PendingIntent> pendingMap = new HashMap<>();
     private int captureCount;
+    private List<String> capturedUriArray = new ArrayList<>();
+
 
     private RemoteViews notificationView;
     private Notification notification;
@@ -73,8 +69,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_run_start))
                     .build());
 
-            closeDialog();
-            ToastWrapper.showText(this, getResources().getString(R.string.init_app));
+            showMessage(getResources().getString(R.string.init_app));
             showComplexNotification(getResources().getString(R.string.init_app));
 
         } else if(action.equals(NotificationAction.STOP_ACTION.getString())) {
@@ -89,12 +84,16 @@ public class CaptureService extends Service implements ScreenshotListener{
         } else if(action.equals(NotificationAction.RESET_ACTION.getString())) {
 
             if (captureCount == 0) {
-                closeDialog();
-                ToastWrapper.makeText(getApplicationContext(), R.string.capture_no_content).show();
+                showMessage(getResources().getString(R.string.capture_no_content));
                 return START_STICKY;
             }
-            if (!imageCombineUtil.fileDelete(imageCombineUtil.getPath())) {
-                ToastWrapper.makeText(getApplicationContext(), R.string.reset_fail).show();
+            if(!imageCombineUtil.isExecutable()) {
+                showMessage(getResources().getString(R.string.file_writing));
+                return START_STICKY;
+            }
+
+            if (!recycle()) {
+                showMessage(getResources().getString(R.string.reset_fail));
             } else {
                 captureCount = 0;
 
@@ -103,37 +102,68 @@ public class CaptureService extends Service implements ScreenshotListener{
                         getResources().getString(R.string.ga_action_capture_delete))
                         .build());
 
-                ToastWrapper.makeText(getApplicationContext(), R.string.reset_success).show();
+                showMessage(getResources().getString(R.string.reset_success));
             }
 
-            closeDialog();
             showComplexNotification(null);
             notificationManager.notify(NOTIFICATION_ID, notification);
 
         } else if(action.equals(NotificationAction.SAVE_ACTION.getString())) {
 
             if(captureCount == 0) {
-                closeDialog();
-                ToastWrapper.makeText(getApplicationContext(), R.string.capture_no_content).show();
+                showMessage(getResources().getString(R.string.capture_no_content));
                 return START_STICKY;
+            }
+            if(!imageCombineUtil.isExecutable()) {
+                showMessage(getResources().getString(R.string.file_writing));
+              return START_STICKY;
             }
 
             if (!imageCombineUtil.mediaStoreInsertImage(
                     getContentResolver(),
-                    imageCombineUtil.getPath(),
+                    imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1),
                     imageCombineUtil.getName())) {
-                closeDialog();
-                ToastWrapper.makeText(getApplicationContext(), R.string.save_fail).show();
+                showMessage(getResources().getString(R.string.save_fail));
             }
             else {
                 tracker.send(new HitBuilders.EventBuilder(
                         getResources().getString(R.string.ga_category_action),
                         getResources().getString(R.string.ga_action_capture_save))
                         .build());
-
-                closeDialog();
-                ToastWrapper.makeText(getApplicationContext(), R.string.save_success).show();
+                showMessage(getResources().getString(R.string.save_success));
             }
+
+        } else if(action.equals(NotificationAction.GALLERY_ACTION.getString())) {
+
+            if (captureCount == 0) {
+                showMessage(getResources().getString(R.string.capture_no_content));
+                return START_STICKY;
+            }
+
+            if (!imageCombineUtil.isExecutable()) {
+                showMessage(getResources().getString(R.string.file_writing));
+                return START_STICKY;
+            }
+
+            tracker.send(new HitBuilders.EventBuilder(
+                    getResources().getString(R.string.ga_category_action),
+                    getResources().getString(R.string.ga_action_capture_view)).build());
+
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setDataAndType(Uri.parse("file://" + imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1)), "image/*");
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
+
+        } else if(action.equals(NotificationAction.LIMIT_ACTION.getString())) {
+            tracker.send(new HitBuilders.EventBuilder(
+                    getResources().getString(R.string.ga_category_action),
+                    getResources().getString(R.string.ga_action_capture_limit))
+                    .build());
+
+            showMessage(getResources().getString(R.string.capture_limit));
+            showComplexNotification(null);
+            notificationManager.notify(NOTIFICATION_ID, notification);
+
         } else if(action.equals(NotificationAction.EXCEPTION_ACTION.getString())) {
 
             tracker.send(new HitBuilders.EventBuilder(
@@ -143,48 +173,11 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             recycle();
 
-            closeDialog();
-            ToastWrapper.showText(getApplicationContext(), getResources().getString(R.string.exception_out_of_memory));
+            showMessage(getResources().getString(R.string.exception_out_of_memory));
             showComplexNotification(getResources().getString(R.string.exception_out_of_memory));
             notificationManager.notify(NOTIFICATION_ID, notification);
-        } else if(action.equals(NotificationAction.GALLERY_ACTION.getString())) {
 
-            if (captureCount == 0) {
-                closeDialog();
-                ToastWrapper.makeText(getApplicationContext(), R.string.capture_no_content).show();
-                return START_STICKY;
-            }
-
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setDataAndType(Uri.parse("file://" + imageCombineUtil.getPath()), "image/*");
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(i);
         }
-//        공유 기능 제외
-//        else if(action.equals(NotificationAction.SHARE_ACTION.getString())) {
-//            if(captureCount == 0) {
-//                ToastWrapper.makeText(getApplicationContext(), R.string.capture_no_content).show();
-//                notiSlideUp();
-//                return START_STICKY;
-//            }
-//
-//            Uri screenshotUri = Uri.parse("file://"+imageCombineUtil.getPath());
-//            File file = new File(screenshotUri.getPath());
-//            Bitmap bitmap = decodeFile(file);
-//            imageCombineUtil.bitmapFileWrite(file.getPath(), bitmap);
-//
-////            Log.e("SHARE", imageCombineUtil.getPath());
-//            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-//            sharingIntent.setType("image/jpeg");
-//            sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(file.getPath()));
-//            Intent chooserintent = Intent.createChooser(sharingIntent, "Share Image");
-//            chooserintent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//            startActivity(chooserintent);
-//
-//            showComplexNotification(getResources().getString(R.string.share_string));
-//            notificationManager.notify(NOTIFICATION_ID, notification);
-//            notiSlideUp();
-//        }
 
         return START_STICKY;
 
@@ -196,12 +189,10 @@ public class CaptureService extends Service implements ScreenshotListener{
         observer.stop();
         if(captureCount != 0) {
             recycle();
-            closeDialog();
-            ToastWrapper.showText(this, getResources().getString(R.string.exit_reset_app));
-        } else {
-            closeDialog();
-            ToastWrapper.showText(this, getResources().getString(R.string.exit_app));
-        }
+            showMessage(getResources().getString(R.string.exit_reset_app));
+        } else
+            showMessage(getResources().getString(R.string.exit_app));
+
     }
 
     @Nullable
@@ -218,24 +209,28 @@ public class CaptureService extends Service implements ScreenshotListener{
                 getResources().getString(R.string.ga_action_capture_capturing))
                 .build());
 
-        captureCount++;
+        if(captureCount == 0) {
+            captureCount++;
+            capturedUriArray.add(uri.getPath());
+            new ImageCombineProcessor(imageCombineUtil.pathCreat(), null, uri.getPath(), true).execute();
+        } else if(captureCount < CAPTURE_LIMIT) {
+            captureCount++;
+            capturedUriArray.add(uri.getPath());
+            String combinedPath = imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1);
+            new ImageCombineProcessor(imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
+        } else
+            try {
+                imageCombineUtil.fileDelete(uri.getPath());
+                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+//                imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), uri.getPath());
+                pendingMap.get(NotificationAction.LIMIT_ACTION.getString()).send();
+            } catch (PendingIntent.CanceledException e) {
+                e.printStackTrace();
+            }
 
-        switch(captureCount) {
-            case 1:
-                new ImageCombineProcessor(imageCombineUtil.pathCreat(), null, uri.getPath(), true).execute();
-                break;
-            default:
-                String combinedPath = imageCombineUtil.getPath();
-                new ImageCombineProcessor(imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
-                break;
-        }
 
-        showComplexNotification(getResources().getString(R.string.share_pressbtn_pless));
+        showComplexNotification(getResources().getString(R.string.capture_success));
         notificationManager.notify(NOTIFICATION_ID, notification);
-    }
-
-    public void closeDialog() {
-        this.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
     private void init() {
@@ -259,7 +254,12 @@ public class CaptureService extends Service implements ScreenshotListener{
                     } catch (PendingIntent.CanceledException e) {
                         e.printStackTrace();
                     }
-
+                } else {
+                    if(captureCount != 0)
+                        recycle();
+                    showMessage(getResources().getString(R.string.exception_occur));
+                    showComplexNotification(null);
+                    notificationManager.notify(NOTIFICATION_ID, notification);
                 }
             }
         });
@@ -281,14 +281,6 @@ public class CaptureService extends Service implements ScreenshotListener{
         view.setImageViewResource(R.id.noti_save_image, R.mipmap.save);
         view.setTextViewText(R.id.noti_capture_count_text, captureCount+getResources().getString(R.string.capture_count));
 
-//        view.setOnClickPendingIntent(R.id.notiExit, pendingMap.get(NotificationAction.STOP_ACTION.getString()));
-//        view.setOnClickPendingIntent(R.id.notiReset, pendingMap.get(NotificationAction.RESET_ACTION.getString()));
-//        view.setOnClickPendingIntent(R.id.notiShare, pendingMap.get(NotificationAction.SAVE_ACTION.getString()));
-//
-//        view.setImageViewResource(R.id.notiExit, android.R.drawable.ic_menu_close_clear_cancel);
-//        view.setImageViewResource(R.id.notiReset, android.R.drawable.ic_menu_delete);
-//        view.setImageViewResource(R.id.notiShare, android.R.drawable.ic_menu_save);
-//        view.setTextViewText(R.id.notiText, captureCount+"");
         return view;
     }
 
@@ -314,15 +306,16 @@ public class CaptureService extends Service implements ScreenshotListener{
         exceptionIntent.setAction(NotificationAction.EXCEPTION_ACTION.getString());
         PendingIntent exceptionPending = PendingIntent.getService(this, 0, exceptionIntent, 0);
 
-//        Intent shareIntent = new Intent(this, CaptureService.class);
-//        shareIntent.setAction(NotificationAction.SHARE_ACTION.getString());
-//        PendingIntent sharePending = PendingIntent.getService(this, 0, shareIntent, 0);
+        Intent limitIntent = new Intent(this, CaptureService.class);
+        limitIntent.setAction(NotificationAction.LIMIT_ACTION.getString());
+        PendingIntent limitPending = PendingIntent.getService(this, 0, limitIntent, 0);
 
         pendingMap.put(NotificationAction.GALLERY_ACTION.getString(), galleryPending);
         pendingMap.put(NotificationAction.STOP_ACTION.getString(), stopPending);
         pendingMap.put(NotificationAction.RESET_ACTION.getString(), resetPending);
         pendingMap.put(NotificationAction.SAVE_ACTION.getString(), savePending);
         pendingMap.put(NotificationAction.EXCEPTION_ACTION.getString(), exceptionPending);
+        pendingMap.put(NotificationAction.LIMIT_ACTION.getString(), limitPending);
     }
 
     private void showComplexNotification(String tickerText) {
@@ -343,19 +336,48 @@ public class CaptureService extends Service implements ScreenshotListener{
                 .setNumber(captureCount)
                 .setDefaults(Notification.DEFAULT_VIBRATE
                         | Notification.DEFAULT_LIGHTS)
-                .setPriority(setCheckSdk())
+                .setPriority(getHeadsUpCheckSdk())
                 .build();
 
         startForeground(NOTIFICATION_ID, notification);
     }
 
-    private void recycle() {
-        imageCombineUtil.fileDelete(imageCombineUtil.getPath());
-        imageCombineUtil.fileDelete(imageCombineUtil.getCombinedPath());
-        captureCount = 0;
+
+
+    public void showMessage(CharSequence message) {
+        closeDialog();
+        ToastWrapper.showText(getApplicationContext(), message);
     }
 
-    private int setCheckSdk() {
+    public void closeDialog() {
+        this.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+    }
+
+    private boolean recycle() {
+        try {
+            Iterator imagePathIter = imageCombineUtil.getImagePathArray().iterator();
+            Iterator capturedPathIter = capturedUriArray.iterator();
+            while (imagePathIter.hasNext()) {
+                String deletePath = (String) imagePathIter.next();
+                imageCombineUtil.fileDelete(deletePath);
+            }
+
+            while (capturedPathIter.hasNext()) {
+                String deletePath = (String) capturedPathIter.next();
+                imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), deletePath);
+            }
+
+            captureCount = 0;
+            imageCombineUtil.getImagePathArray().clear();
+            capturedUriArray.clear();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private int getHeadsUpCheckSdk() {
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
             return Notification.PRIORITY_MAX;
         else

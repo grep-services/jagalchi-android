@@ -4,7 +4,6 @@ import android.app.Application;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
-import com.moon_o.jagalchi.R;
 
 /**
  * Created by mucha on 16. 4. 29.

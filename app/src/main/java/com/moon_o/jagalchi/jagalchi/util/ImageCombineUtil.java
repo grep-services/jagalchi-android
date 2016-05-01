@@ -3,26 +3,24 @@ package com.moon_o.jagalchi.jagalchi.util;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
-import android.view.WindowManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Queue;
+import java.util.Stack;
 
 /**
  * Created by mucha on 16. 4. 27.
@@ -32,9 +30,11 @@ public class ImageCombineUtil {
 
     private final String BASE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Pictures/TenToOne/";
     public final String MEDIA_EXTERNAL_PATH = MediaStore.Images.Media.EXTERNAL_CONTENT_URI.getPath();
+
+    private List<String> imagePathArray = new ArrayList<>();
     private String name;
-    private String path;
     private String combinedPath;
+    private boolean executable = false;
 
     private ImageCombineUtil() {}
 
@@ -44,12 +44,20 @@ public class ImageCombineUtil {
         return _instance;
     }
 
-    public String getPath() {
-        return path;
+    public List<String> getImagePathArray() {
+        return imagePathArray;
     }
 
-    public void setPath(String beforePath) {
-        this.path = beforePath;
+    public void setImagePathArray(List<String> imagePathArray) {
+        this.imagePathArray = imagePathArray;
+    }
+
+    public boolean isExecutable() {
+        return this.executable;
+    }
+
+    public void setExecutable(boolean executable) {
+        this.executable = executable;
     }
 
     public String getName() {
@@ -70,8 +78,10 @@ public class ImageCombineUtil {
 
     public String pathCreat() {
         setName("TenToOne_"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()) + ".jpg");
-        setPath(BASE_PATH + name);
-        return path;
+        imagePathArray.add("TenToOne_"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()) + ".jpg");
+        imagePathArray.add(BASE_PATH + name);
+//        setPath(BASE_PATH + name);
+        return imagePathArray.get(imagePathArray.size()-1);
     }
 
     public void fileCreate(File folder, File file) {
@@ -89,7 +99,9 @@ public class ImageCombineUtil {
 
     public boolean fileDelete(String path) {
         try {
-            new File(path).delete();
+            File file = new File(path);
+            if (file.exists())
+                file.delete();
         } catch (Exception e) {
             return false;
         }
@@ -115,56 +127,6 @@ public class ImageCombineUtil {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public boolean mediaStoreInsertImage(ContentResolver contentResolver, String imagePath, String imageName) {
-        if(!new File(imagePath).exists())
-            try {
-                throw new FileNotFoundException("Image Not Found");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-        try {
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.TITLE, imageName);
-            values.put(MediaStore.Images.Media.DESCRIPTION, "Created by TenToOne");
-            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
-            values.put(MediaStore.Images.ImageColumns.DATA, imagePath);
-            contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            return true;
-        }
-    }
-
-    public boolean mediaStoreDeleteImage(ContentResolver contentResolver, String path) {
-        try {
-            String[] retCol = {MediaStore.Images.Media._ID};
-            Cursor cur = contentResolver.query(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    retCol,
-                    MediaStore.MediaColumns.DATA + "='" +path+"'",
-                    null,
-                    null);
-            if(cur.getCount() == 0)
-                throw new NullPointerException("ImageData is not exist");
-
-            cur.moveToFirst();
-            int id = cur.getInt(cur.getColumnIndex(MediaStore.MediaColumns._ID));
-            cur.close();
-
-            Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-
-            contentResolver.delete(uri, null, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            return true;
         }
     }
 
@@ -198,6 +160,51 @@ public class ImageCombineUtil {
         backupBitmap.recycle();
         capturedBitmap.recycle();
         combineBitmap.recycle();
+    }
+
+    public boolean mediaStoreInsertImage(ContentResolver contentResolver, String imagePath, String imageName) {
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.TITLE, imageName);
+            values.put(MediaStore.Images.Media.DESCRIPTION, "Created by TenToOne");
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+            values.put(MediaStore.Images.ImageColumns.DATA, imagePath);
+            contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            return true;
+        }
+    }
+
+    public boolean mediaStoreDeleteImage(ContentResolver contentResolver, String path) {
+        try {
+            String[] retCol = {MediaStore.Images.Media._ID};
+            Cursor cur = contentResolver.query(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    retCol,
+                    MediaStore.MediaColumns.DATA + "='" +path+"'",
+                    null,
+                    null);
+            if(cur.getCount() == 0)
+                throw new NullPointerException("ImageData is not exist");
+
+            cur.moveToFirst();
+            int id = cur.getInt(cur.getColumnIndex(MediaStore.MediaColumns._ID));
+            cur.close();
+
+            Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+            Log.e("DELETE MEDIASTORE", uri+"");
+
+            contentResolver.delete(uri, null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            return true;
+        }
     }
 
 

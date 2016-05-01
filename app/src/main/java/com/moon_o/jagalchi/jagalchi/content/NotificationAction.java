@@ -4,13 +4,13 @@ package com.moon_o.jagalchi.jagalchi.content;
  * Created by mucha on 16. 4. 21.
  */
 public enum NotificationAction {
-    GALLERY_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.gallery"),
-    START_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.start"),
-    STOP_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.stop"),
-    RESET_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.reset"),
-    SAVE_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.save"),
-    EXCEPTION_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.exception"),
-    SHARE_ACTION("com.moon_o.jagalchi.jagalchi.captureservice.share")
+    GALLERY_ACTION("com.moon_o.tentoone.tentoone.captureservice.gallery"),
+    START_ACTION("com.moon_o.tentoone.tentoone.captureservice.start"),
+    STOP_ACTION("com.moon_o.tentoone.tentoone.captureservice.stop"),
+    RESET_ACTION("com.moon_o.tentoone.tentoone.captureservice.reset"),
+    SAVE_ACTION("com.moon_o.tentoone.tentoone.captureservice.save"),
+    EXCEPTION_ACTION("com.moon_o.tentoone.tentoone.captureservice.exception"),
+    LIMIT_ACTION("com.moon_o.tentoone.tentoone.captureservice.limit")
     ;
 
     private final String action;

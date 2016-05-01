@@ -1,14 +1,19 @@
 <resources>
     <string name="app_name">TenToOne</string>
     <string name="capture_count">장</string>
-    <string name="init_app">TenToOne - 스크린샷을 모아 공유해 보세요</string>
+    <string name="init_app">TenToOne - 화면을 캡쳐하시면 자동으로 이미지가 합쳐집니다</string>
     <string name="exit_app">TenToOne - 앱을 종료합니다</string>
     <string name="exit_reset_app">TenToOne - 캡쳐된 파일을 삭제하고 앱을 종료합니다.</string>
 
-    <string name="exception_occur">에러가 발생했습니다.</string>
+    <string name="exception_occur">예기치 않은 에러가 발생하여 기존의 이미지를 리셋합니다.</string>
     <string name="exception_out_of_memory">합칠수 있는 이미지의 용량을 초과했습니다.</string>
 
+    <string name="file_writing">파일을 쓰는중입니다. 잠시후에 실행 주세요</string>
+
     <string name="capture_no_content">사진을 캡쳐해주세요</string>
+    <string name="capture_success">이미지 캡쳐를 성공했습니다</string>
+    <string name="capture_combine_success">합쳐진 캡쳐 이미지를 확인해보세요</string>
+    <string name="capture_limit">이미지 합치기는 10장까지 가능합니다</string>
 
     <string name="reset_success">리셋을 완료했습니다</string>
     <string name="reset_fail">리셋을 실패했습니다. 다시 시도해 주세요</string>
@@ -16,7 +21,7 @@
     <string name="save_success">갤러리에 저장하였습니다</string>
     <string name="save_fail">저장을 실패했습니다. 다시 시도해 주세요</string>
 
-    <string name="share_string">TenToOne-합쳐진 이미지를 공유할 수 있습니다</string>
+    <string name="share_string">TenToOne - 합쳐진 이미지를 공유할 수 있습니다</string>
     <string name="share_pressbtn_pless">공유하시려면 공유 아이콘을 눌러주세요</string>
     <string name="share_success"></string>
     <string name="share_fail"></string>
@@ -25,6 +30,8 @@
     <string name="ga_action_capture_capturing">Capturing</string>
     <string name="ga_action_capture_save">Save</string>
     <string name="ga_action_capture_delete">Delete</string>
+    <string name="ga_action_capture_limit">Limit</string>
+    <string name="ga_action_capture_view">Image View</string>
     <string name="ga_action_capture_oom_capture">OutOfMemory Capture</string>
 
     <string name="ga_category_run">Run</string>
