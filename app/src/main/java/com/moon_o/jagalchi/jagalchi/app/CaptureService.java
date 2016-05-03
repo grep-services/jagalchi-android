@@ -25,6 +25,7 @@ import com.moon_o.jagalchi.jagalchi.util.ScreenshotListener;
 import com.moon_o.jagalchi.jagalchi.util.ScreenshotObserver;
 import com.moon_o.jagalchi.jagalchi.util.ToastWrapper;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,7 +41,7 @@ public class CaptureService extends Service implements ScreenshotListener{
     private Tracker tracker;
 
     private static final int NOTIFICATION_ID = 1;
-    private static final int CAPTURE_LIMIT = 5;
+    private static final int CAPTURE_LIMIT = 10;
     private ScreenshotObserver observer;
     private ImageCombineUtil imageCombineUtil;
     private Map<String, PendingIntent> pendingMap = new HashMap<>();
@@ -77,7 +78,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_category_run),
                     getResources().getString(R.string.ga_action_run_stop))
                     .build());
-
+            recycle(false);
             stopForeground(true);
             stopSelf();
 
@@ -92,7 +93,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                 return START_STICKY;
             }
 
-            if (!recycle()) {
+            if (!recycle(false)) {
                 showMessage(getResources().getString(R.string.reset_fail));
             } else {
                 captureCount = 0;
@@ -120,7 +121,7 @@ public class CaptureService extends Service implements ScreenshotListener{
             }
 
             if (!imageCombineUtil.mediaStoreInsertImage(
-                    getContentResolver(),
+                    this.getContentResolver(),
                     imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1),
                     imageCombineUtil.getName())) {
                 showMessage(getResources().getString(R.string.save_fail));
@@ -130,7 +131,12 @@ public class CaptureService extends Service implements ScreenshotListener{
                         getResources().getString(R.string.ga_category_action),
                         getResources().getString(R.string.ga_action_capture_save))
                         .build());
+
                 showMessage(getResources().getString(R.string.save_success));
+
+                recycle(true);
+                showComplexNotification(null);
+                notificationManager.notify(NOTIFICATION_ID, notification);
             }
 
         } else if(action.equals(NotificationAction.GALLERY_ACTION.getString())) {
@@ -171,7 +177,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_capture_oom_capture))
                     .build());
 
-            recycle();
+            recycle(false);
 
             showMessage(getResources().getString(R.string.exception_out_of_memory));
             showComplexNotification(getResources().getString(R.string.exception_out_of_memory));
@@ -188,7 +194,7 @@ public class CaptureService extends Service implements ScreenshotListener{
         super.onDestroy();
         observer.stop();
         if(captureCount != 0) {
-            recycle();
+            recycle(false);
             showMessage(getResources().getString(R.string.exit_reset_app));
         } else
             showMessage(getResources().getString(R.string.exit_app));
@@ -218,15 +224,19 @@ public class CaptureService extends Service implements ScreenshotListener{
             capturedUriArray.add(uri.getPath());
             String combinedPath = imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1);
             new ImageCombineProcessor(imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
-        } else
+        } else {
             try {
-                imageCombineUtil.fileDelete(uri.getPath());
-                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
-//                imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), uri.getPath());
+                File file = new File(uri.getPath());
+                if(file.exists()) {
+                    imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), uri.getPath());
+                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+                }
                 pendingMap.get(NotificationAction.LIMIT_ACTION.getString()).send();
             } catch (PendingIntent.CanceledException e) {
                 e.printStackTrace();
             }
+        }
+
 
 
         showComplexNotification(getResources().getString(R.string.capture_success));
@@ -256,7 +266,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     }
                 } else {
                     if(captureCount != 0)
-                        recycle();
+                        recycle(false);
                     showMessage(getResources().getString(R.string.exception_occur));
                     showComplexNotification(null);
                     notificationManager.notify(NOTIFICATION_ID, notification);
@@ -280,6 +290,21 @@ public class CaptureService extends Service implements ScreenshotListener{
         view.setImageViewResource(R.id.noti_delete_image, R.mipmap.delete);
         view.setImageViewResource(R.id.noti_save_image, R.mipmap.save);
         view.setTextViewText(R.id.noti_capture_count_text, captureCount+getResources().getString(R.string.capture_count));
+
+        return view;
+    }
+
+    private RemoteViews testBuileNotificationItemMap(Map<String, PendingIntent> pendingMap) {
+        if (pendingMap.isEmpty())
+            throw new NullPointerException("PendingIntent elements is null");
+
+        RemoteViews view = new RemoteViews(getPackageName(), R.layout.notificationsosul_layout);
+
+        view.setOnClickPendingIntent(R.id.noti_8, pendingMap.get(NotificationAction.STOP_ACTION.getString()));
+        view.setOnClickPendingIntent(R.id.noti_7, pendingMap.get(NotificationAction.RESET_ACTION.getString()));
+        view.setOnClickPendingIntent(R.id.noti_6, pendingMap.get(NotificationAction.SAVE_ACTION.getString()));
+
+        view.setTextViewText(R.id.noti_3, captureCount+"");
 
         return view;
     }
@@ -325,19 +350,21 @@ public class CaptureService extends Service implements ScreenshotListener{
         if(notificationManager == null)
             notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationView = null;
-        notificationView = buildNotificationItem(pendingMap);
+        notificationView = testBuileNotificationItemMap(pendingMap);
+//                buildNotificationItem(pendingMap);
 
         notification = null;
         notification = new NotificationCompat.Builder(this)
                 .setTicker(tickerText)
-                .setContent(notificationView)
+//                .setContent(notificationView)
                 .setContentIntent(pendingMap.get(NotificationAction.GALLERY_ACTION.getString()))
-                .setSmallIcon(R.mipmap.notification)
+                .setSmallIcon(R.mipmap.icon)
                 .setNumber(captureCount)
-                .setDefaults(Notification.DEFAULT_VIBRATE
-                        | Notification.DEFAULT_LIGHTS)
+//                .setDefaults(Notification.DEFAULT_VIBRATE
+//                        | Notification.DEFAULT_LIGHTS)
                 .setPriority(getHeadsUpCheckSdk())
                 .build();
+        notification.bigContentView = notificationView;
 
         startForeground(NOTIFICATION_ID, notification);
     }
@@ -353,14 +380,22 @@ public class CaptureService extends Service implements ScreenshotListener{
         this.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
-    private boolean recycle() {
+    private boolean recycle(boolean newAction) {
         try {
-            Iterator imagePathIter = imageCombineUtil.getImagePathArray().iterator();
-            Iterator capturedPathIter = capturedUriArray.iterator();
-            while (imagePathIter.hasNext()) {
-                String deletePath = (String) imagePathIter.next();
-                imageCombineUtil.fileDelete(deletePath);
+            Iterator imagePathIter;
+            if(!newAction) {
+                imagePathIter = imageCombineUtil.getImagePathArray().iterator();
+                while (imagePathIter.hasNext()) {
+                    String deletePath = (String) imagePathIter.next();
+                    imageCombineUtil.fileDelete(deletePath);
+                }
+            } else {
+                for(int i = 0; i < imageCombineUtil.getImagePathArray().size()-1; i++) {
+                    imageCombineUtil.fileDelete(imageCombineUtil.getImagePathArray().get(i));
+                }
             }
+
+            Iterator capturedPathIter = capturedUriArray.iterator();
 
             while (capturedPathIter.hasNext()) {
                 String deletePath = (String) capturedPathIter.next();

@@ -8,6 +8,7 @@ public enum NotificationAction {
     START_ACTION("com.moon_o.tentoone.tentoone.captureservice.start"),
     STOP_ACTION("com.moon_o.tentoone.tentoone.captureservice.stop"),
     RESET_ACTION("com.moon_o.tentoone.tentoone.captureservice.reset"),
+    RESET_NOT_MESSAGE_ACTION("com.moon_o.tentoone.tentoone.captureservice.notmessagereset"),
     SAVE_ACTION("com.moon_o.tentoone.tentoone.captureservice.save"),
     EXCEPTION_ACTION("com.moon_o.tentoone.tentoone.captureservice.exception"),
     LIMIT_ACTION("com.moon_o.tentoone.tentoone.captureservice.limit")

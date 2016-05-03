@@ -3,6 +3,8 @@ package com.moon_o.jagalchi.jagalchi.util;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,6 +12,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+
+import com.moon_o.jagalchi.jagalchi.app.CaptureService;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -115,7 +119,7 @@ public class ImageCombineUtil {
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(backFile, true);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 55, out);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -134,8 +138,8 @@ public class ImageCombineUtil {
         setCombinedPath(combinedPath);
         fileCreate(null, new File(combinePath));
         Bitmap backupCopyBitmap, capturedCopyBitmap, combineBitmap;
-        backupCopyBitmap = backupBitmap.copy(Bitmap.Config.ARGB_8888, true);
-        capturedCopyBitmap = capturedBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        backupCopyBitmap = backupBitmap.copy(Bitmap.Config.ARGB_4444, true);
+        capturedCopyBitmap = capturedBitmap.copy(Bitmap.Config.ARGB_4444, true);
 
         int w;
         if(backupCopyBitmap.getWidth() > capturedCopyBitmap.getWidth())
@@ -146,7 +150,7 @@ public class ImageCombineUtil {
         int h = backupCopyBitmap.getHeight() + capturedCopyBitmap.getHeight();
 
 
-        combineBitmap =Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        combineBitmap =Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_4444);
 //                createScaledBitmap(backupCopyBitmap, w, h, true);
 
         Canvas canvas = new Canvas(combineBitmap);
@@ -163,13 +167,13 @@ public class ImageCombineUtil {
     }
 
     public boolean mediaStoreInsertImage(ContentResolver contentResolver, String imagePath, String imageName) {
-
         try {
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.TITLE, imageName);
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, imageName);
             values.put(MediaStore.Images.Media.DESCRIPTION, "Created by TenToOne");
             values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
-            values.put(MediaStore.Images.ImageColumns.DATA, imagePath);
+            values.put(MediaStore.Images.Media.DATA, imagePath);
             contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         } catch (Exception e) {
             e.printStackTrace();
@@ -180,6 +184,7 @@ public class ImageCombineUtil {
     }
 
     public boolean mediaStoreDeleteImage(ContentResolver contentResolver, String path) {
+        Log.e("MedaiStoreDeleteImage", path);
         try {
             String[] retCol = {MediaStore.Images.Media._ID};
             Cursor cur = contentResolver.query(
@@ -196,8 +201,7 @@ public class ImageCombineUtil {
             cur.close();
 
             Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-            Log.e("DELETE MEDIASTORE", uri+"");
-
+            Log.e("MedaiStoreDeleteImage", "URI -> " + uri);
             contentResolver.delete(uri, null, null);
         } catch (Exception e) {
             e.printStackTrace();
