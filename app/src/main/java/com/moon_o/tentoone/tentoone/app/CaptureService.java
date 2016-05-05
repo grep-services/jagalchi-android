@@ -87,7 +87,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                 showMessage(getResources().getString(R.string.capture_no_content));
                 return START_STICKY;
             }
-            if(!imageCombineUtil.isExecutable()) {
+            if (!imageCombineUtil.isExecutable()) {
                 showMessage(getResources().getString(R.string.file_writing));
                 return START_STICKY;
             }
@@ -107,6 +107,16 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             showComplexNotification(null);
             notificationManager.notify(NOTIFICATION_ID, notification);
+
+        } else if(action.equals(NotificationAction.UNDO_ACTION.getString())) {
+
+            if(captureCount == 0) {
+                showMessage(getResources().getString(R.string.undo_limit));
+                return START_STICKY;
+            }
+
+            
+
 
         } else if(action.equals(NotificationAction.SAVE_ACTION.getString())) {
 
@@ -337,6 +347,10 @@ public class CaptureService extends Service implements ScreenshotListener{
         resetIntent.setAction(NotificationAction.RESET_ACTION.getString());
         PendingIntent resetPending = PendingIntent.getService(this, 0 , resetIntent, 0);
 
+        Intent undoIntent = new Intent(this, CaptureService.class);
+        undoIntent.setAction(NotificationAction.UNDO_ACTION.getString());
+        PendingIntent undoPending = PendingIntent.getService(this, 0, undoIntent, 0);
+
         Intent saveIntent = new Intent(this, CaptureService.class);
         saveIntent.setAction(NotificationAction.SAVE_ACTION.getString());
         PendingIntent savePending = PendingIntent.getService(this, 0, saveIntent, 0);
@@ -352,6 +366,7 @@ public class CaptureService extends Service implements ScreenshotListener{
         pendingMap.put(NotificationAction.GALLERY_ACTION.getString(), galleryPending);
         pendingMap.put(NotificationAction.STOP_ACTION.getString(), stopPending);
         pendingMap.put(NotificationAction.RESET_ACTION.getString(), resetPending);
+        pendingMap.put(NotificationAction.UNDO_ACTION.getString(), undoPending);
         pendingMap.put(NotificationAction.SAVE_ACTION.getString(), savePending);
         pendingMap.put(NotificationAction.EXCEPTION_ACTION.getString(), exceptionPending);
         pendingMap.put(NotificationAction.LIMIT_ACTION.getString(), limitPending);
