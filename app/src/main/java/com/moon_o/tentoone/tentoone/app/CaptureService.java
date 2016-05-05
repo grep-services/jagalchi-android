@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.google.android.gms.analytics.HitBuilders;
@@ -115,7 +116,30 @@ public class CaptureService extends Service implements ScreenshotListener{
                 return START_STICKY;
             }
 
-            
+            String undoPath = imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1);
+            imageCombineUtil.fileDelete(undoPath);
+            imageCombineUtil.getImagePathArray().remove(undoPath);
+
+            File file = new File(capturedUriArray.get(capturedUriArray.size()-1));
+            if(file.exists()) {
+                //file write 되자마자 삭제하는 경우 안되기 때문에 1초정도 멈춘다음 삭제해야됨!
+                try {
+                    Thread.sleep(1000);
+                    imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), file.getCanonicalPath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE));
+                capturedUriArray.remove(capturedUriArray.get(capturedUriArray.size()-1));
+            }
+
+            captureCount--;
+            showMessage(getResources().getString(R.string.undo_success));
+            showComplexNotification(getResources().getString(R.string.undo_success));
+            notificationManager.notify(NOTIFICATION_ID, notification);
 
 
         } else if(action.equals(NotificationAction.SAVE_ACTION.getString())) {

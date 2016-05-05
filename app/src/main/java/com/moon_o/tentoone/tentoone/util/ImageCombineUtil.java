@@ -78,7 +78,6 @@ public class ImageCombineUtil {
 
     public String pathCreat() {
         setName("TenToOne_"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()) + ".jpg");
-        imagePathArray.add("TenToOne_"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()) + ".jpg");
         imagePathArray.add(BASE_PATH + name);
 //        setPath(BASE_PATH + name);
         return imagePathArray.get(imagePathArray.size()-1);
