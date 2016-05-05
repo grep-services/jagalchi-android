@@ -1,10 +1,8 @@
-package com.moon_o.jagalchi.jagalchi.util;
+package com.moon_o.jagalchi.tentoone.util;
 
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.widget.Toast;
 
 /**
  * Created by mucha on 16. 4. 27.

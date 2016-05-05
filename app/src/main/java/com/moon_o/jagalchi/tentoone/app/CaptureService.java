@@ -1,4 +1,4 @@
-package com.moon_o.jagalchi.jagalchi.app;
+package com.moon_o.jagalchi.tentoone.app;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -11,27 +11,26 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.moon_o.jagalchi.R;
-import com.moon_o.jagalchi.jagalchi.content.NotificationAction;
-import com.moon_o.jagalchi.jagalchi.util.AnalyticsApplication;
-import com.moon_o.jagalchi.jagalchi.util.ImageCombineProcessor;
-import com.moon_o.jagalchi.jagalchi.util.ImageCombineUtil;
-import com.moon_o.jagalchi.jagalchi.util.ScreenshotListener;
-import com.moon_o.jagalchi.jagalchi.util.ScreenshotObserver;
-import com.moon_o.jagalchi.jagalchi.util.ToastWrapper;
+import com.moon_o.jagalchi.tentoone.content.NotificationAction;
+import com.moon_o.jagalchi.tentoone.util.AnalyticsApplication;
+import com.moon_o.jagalchi.tentoone.util.ImageCombineProcessor;
+import com.moon_o.jagalchi.tentoone.util.ImageCombineUtil;
+import com.moon_o.jagalchi.tentoone.util.ScreenshotListener;
+import com.moon_o.jagalchi.tentoone.util.ScreenshotObserver;
+import com.moon_o.jagalchi.tentoone.util.ToastWrapper;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  * Created by mucha on 16. 4. 21.
@@ -225,12 +224,27 @@ public class CaptureService extends Service implements ScreenshotListener{
             String combinedPath = imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1);
             new ImageCombineProcessor(imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
         } else {
+            tracker.send(new HitBuilders.EventBuilder(
+                    getResources().getString(R.string.ga_category_action),
+                    getResources().getString(R.string.ga_action_capture_over_capture))
+                    .build());
+
             try {
                 File file = new File(uri.getPath());
                 if(file.exists()) {
-                    imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), uri.getPath());
+                    //file write 되자마자 삭제하는 경우 안되기 때문에 1초정도 멈춘다음 삭제해야됨!
+                    try {
+                        Thread.sleep(1000);
+                        imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), file.getCanonicalPath());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                     sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
                 }
+
                 pendingMap.get(NotificationAction.LIMIT_ACTION.getString()).send();
             } catch (PendingIntent.CanceledException e) {
                 e.printStackTrace();

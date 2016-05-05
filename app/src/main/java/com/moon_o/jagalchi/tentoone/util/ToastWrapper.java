@@ -1,4 +1,4 @@
-package com.moon_o.jagalchi.jagalchi.util;
+package com.moon_o.jagalchi.tentoone.util;
 
 import android.content.Context;
 import android.content.res.Resources;

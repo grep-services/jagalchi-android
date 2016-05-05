@@ -1,4 +1,4 @@
-package com.moon_o.jagalchi.jagalchi.util;
+package com.moon_o.jagalchi.tentoone.util;
 
 /**
  * Created by mucha on 16. 4. 21.
@@ -7,7 +7,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.FileObserver;
-import android.util.Log;
 
 import java.io.File;
 
@@ -48,6 +47,7 @@ public class ScreenshotObserver extends FileObserver{
             mLastTakenPath = name;
             File file = new File(PATH+name);
             mListener.onScreenshotTaken(Uri.fromFile(file));
+//            mListener.onScreenshotTaken(Uri.parse(PATH+name));
         }
 
     }

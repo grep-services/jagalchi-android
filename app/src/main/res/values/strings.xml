@@ -26,13 +26,14 @@
     <string name="share_success"></string>
     <string name="share_fail"></string>
 
+    <!--Google Analytics-->
     <string name="ga_category_action">Action</string>
     <string name="ga_action_capture_capturing">Capturing</string>
     <string name="ga_action_capture_save">Save</string>
     <string name="ga_action_capture_delete">Delete</string>
     <string name="ga_action_capture_limit">Limit</string>
     <string name="ga_action_capture_view">Image View</string>
-    <string name="ga_action_capture_oom_capture">OutOfMemory Capture</string>
+    <string name="ga_action_capture_over_capture">Over Capture</string>
 
     <string name="ga_category_run">Run</string>
     <string name="ga_action_run_start">Start</string>
