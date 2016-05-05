@@ -1,4 +1,4 @@
-package com.moon_o.jagalchi.tentoone.content;
+package com.moon_o.tentoone.tentoone.content;
 
 /**
  * Created by mucha on 16. 4. 21.

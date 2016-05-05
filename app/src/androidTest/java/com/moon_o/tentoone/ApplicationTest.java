@@ -1,4 +1,4 @@
-package com.moon_o.jagalchi;
+package com.moon_o.tentoone;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,4 +1,4 @@
-package com.moon_o.jagalchi.tentoone.app;
+package com.moon_o.tentoone.tentoone.app;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -15,14 +15,14 @@ import android.widget.RemoteViews;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.moon_o.jagalchi.R;
-import com.moon_o.jagalchi.tentoone.content.NotificationAction;
-import com.moon_o.jagalchi.tentoone.util.AnalyticsApplication;
-import com.moon_o.jagalchi.tentoone.util.ImageCombineProcessor;
-import com.moon_o.jagalchi.tentoone.util.ImageCombineUtil;
-import com.moon_o.jagalchi.tentoone.util.ScreenshotListener;
-import com.moon_o.jagalchi.tentoone.util.ScreenshotObserver;
-import com.moon_o.jagalchi.tentoone.util.ToastWrapper;
+import com.moon_o.tentoone.R;
+import com.moon_o.tentoone.tentoone.content.NotificationAction;
+import com.moon_o.tentoone.tentoone.util.AnalyticsApplication;
+import com.moon_o.tentoone.tentoone.util.ImageCombineProcessor;
+import com.moon_o.tentoone.tentoone.util.ImageCombineUtil;
+import com.moon_o.tentoone.tentoone.util.ScreenshotListener;
+import com.moon_o.tentoone.tentoone.util.ScreenshotObserver;
+import com.moon_o.tentoone.tentoone.util.ToastWrapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -173,7 +173,7 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             tracker.send(new HitBuilders.EventBuilder(
                     getResources().getString(R.string.ga_category_action),
-                    getResources().getString(R.string.ga_action_capture_oom_capture))
+                    getResources().getString(R.string.ga_action_capture_over_capture))
                     .build());
 
             recycle(false);

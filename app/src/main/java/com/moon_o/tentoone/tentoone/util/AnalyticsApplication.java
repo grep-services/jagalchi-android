@@ -1,4 +1,4 @@
-package com.moon_o.jagalchi.tentoone.util;
+package com.moon_o.tentoone.tentoone.util;
 
 import android.app.Application;
 

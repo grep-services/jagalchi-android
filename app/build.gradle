@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "com.moon_o.jagalchi"
+        applicationId "com.moon_o.tentoone"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
