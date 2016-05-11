@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TenToOne</string>
+    <string name="app_name">텐투원</string>
     <string name="app_description">텐투원 - 스크린샷 한장으로 모으기</string>
     <string name="init_app">텐투원 - 화면을 캡쳐하시면 자동으로 이미지가 합쳐집니다</string>
     <string name="exit_app">텐투원 - 앱을 종료합니다</string>

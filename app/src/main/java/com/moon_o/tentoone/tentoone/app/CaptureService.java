@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import com.google.android.gms.analytics.HitBuilders;
@@ -82,7 +83,13 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_category_run),
                     getResources().getString(R.string.ga_action_run_stop))
                     .build());
-            recycle(false);
+
+            if(captureCount != 0) {
+                recycle();
+                showMessage(getResources().getString(R.string.exit_reset_app));
+            } else
+                showMessage(getResources().getString(R.string.exit_app));
+
             stopForeground(true);
             stopSelf();
 
@@ -97,7 +104,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                 return START_STICKY;
             }
 
-            if (!recycle(false)) {
+            if (!recycle()) {
                 showMessage(getResources().getString(R.string.reset_fail));
             } else {
                 captureCount = 0;
@@ -169,7 +176,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                         getResources().getString(R.string.ga_action_capture_save))
                         .build());
 
-                recycle(true);
+                recycle();
                 showMessage(getResources().getString(R.string.save_success));
                 showComplexNotification(null);
 //                notificationManager.notify(NOTIFICATION_ID, notification);
@@ -213,7 +220,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_capture_over_capture))
                     .build());
 
-            recycle(false);
+            recycle();
 
             showMessage(getResources().getString(R.string.exception_out_of_memory));
             showComplexNotification(getResources().getString(R.string.exception_out_of_memory));
@@ -229,12 +236,9 @@ public class CaptureService extends Service implements ScreenshotListener{
     public void onDestroy() {
         super.onDestroy();
         observer.stop();
-        if(captureCount != 0) {
-            recycle(false);
-            showMessage(getResources().getString(R.string.exit_reset_app));
-        } else
-            showMessage(getResources().getString(R.string.exit_app));
 
+        if(captureCount != 0)
+            recycle();
     }
 
     @Nullable
@@ -242,7 +246,6 @@ public class CaptureService extends Service implements ScreenshotListener{
     public IBinder onBind(Intent intent) {
         return null;
     }
-
 
     @Override
     public void onScreenshotTaken(Uri uri) {
@@ -316,7 +319,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     }
                 } else {
                     if(captureCount != 0)
-                        recycle(false);
+                        recycle();
                     showMessage(getResources().getString(R.string.exception_occur));
                     showComplexNotification(null);
 //                    notificationManager.notify(NOTIFICATION_ID, notification);
@@ -374,7 +377,7 @@ public class CaptureService extends Service implements ScreenshotListener{
         }
 
         if(target != null && target != -1)
-            view.setImageViewResource(closeImageItem.get(target), R.mipmap.close_imate_item_1);
+            view.setImageViewResource(closeImageItem.get(target), R.drawable.exit);
     }
     private void gridImageItemVisibility(RemoteViews view) {
         int count = 0;
@@ -388,7 +391,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                 view.setImageViewBitmap(elements, bitmap);
                 view.setOnClickPendingIntent(closeImageItem.get(count), pendingMap.get(NotificationAction.UNDO_ACTION.getString()));
             } else {
-                view.setImageViewBitmap(elements, BitmapFactory.decodeResource(getResources(), R.mipmap.default_image));
+                view.setImageViewBitmap(elements, BitmapFactory.decodeResource(getResources(), R.drawable.default_image));
                 view.setOnClickPendingIntent(closeImageItem.get(count), null);
             }
 
@@ -469,19 +472,13 @@ public class CaptureService extends Service implements ScreenshotListener{
         this.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
-    private boolean recycle(boolean newAction) {
+    private boolean recycle() {
         try {
             Iterator imagePathIter;
-            if(!newAction) {
-                imagePathIter = imageCombineUtil.getImagePathArray().iterator();
-                while (imagePathIter.hasNext()) {
-                    String deletePath = (String) imagePathIter.next();
-                    imageCombineUtil.fileDelete(deletePath);
-                }
-            } else {
-                for(int i = 0; i < imageCombineUtil.getImagePathArray().size()-1; i++) {
-                    imageCombineUtil.fileDelete(imageCombineUtil.getImagePathArray().get(i));
-                }
+            imagePathIter = imageCombineUtil.getImagePathArray().iterator();
+            while (imagePathIter.hasNext()) {
+                String deletePath = (String) imagePathIter.next();
+                imageCombineUtil.fileDelete(deletePath);
             }
 
             Iterator capturedPathIter = capturedUriArray.iterator();
@@ -507,6 +504,5 @@ public class CaptureService extends Service implements ScreenshotListener{
         else
             return Notification.PRIORITY_DEFAULT;
     }
-
 
 }

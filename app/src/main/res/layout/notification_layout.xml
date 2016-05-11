@@ -3,95 +3,59 @@
     android:orientation="vertical"
     android:layout_width="match_parent" android:layout_height="wrap_content"
     android:padding="10dp">
-   <!---->
-    <!--<TextView-->
-        <!--android:id="@+id/noti_capture_count_text"-->
-        <!--android:layout_width="@android:dimen/notification_large_icon_width"-->
-        <!--android:layout_height="@android:dimen/notification_large_icon_height"-->
-        <!--android:gravity="center"-->
-        <!--android:textSize="30sp"-->
-        <!--android:text="1장"/>-->
 
-    <!--<ImageView-->
-        <!--android:id="@+id/noti_close_image"-->
-        <!--android:layout_width="72px"-->
-        <!--android:layout_height="72px"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_marginRight="5dp"-->
-        <!--android:scaleType="fitXY"/>-->
-
-    <!--<ImageView-->
-        <!--android:id="@+id/noti_save_image"-->
-        <!--android:layout_width="128px"-->
-        <!--android:layout_height="128px"-->
-        <!--android:layout_marginRight="30dp"-->
-        <!--android:layout_toLeftOf="@+id/noti_delete_image"-->
-        <!--android:scaleType="fitXY"/>-->
-
-
-    <!--<ImageView-->
-        <!--android:id="@+id/noti_delete_image"-->
-        <!--android:layout_width="128px"-->
-        <!--android:layout_height="128px"-->
-        <!--android:layout_marginRight="30dp"-->
-        <!--android:layout_toLeftOf="@id/noti_close_image"-->
-        <!--android:scaleType="fitXY"/>-->
     <FrameLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="7dp">
+        android:layout_marginLeft="@dimen/notification_margin_left"
+        android:layout_marginRight="@dimen/notification_action_margin_right">
         <TextView
             android:id="@+id/noti_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:text="@string/app_description"
-            android:layout_gravity="left|center"
             android:textSize="@dimen/notification_title_text_size"/>
         <ImageView
             android:id="@+id/noti_action_exit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right|center"
-            android:layout_marginRight="@dimen/notification_right_margin"
-            android:src="@mipmap/close_imate_item"/>
+            android:layout_gravity="right"
+            android:src="@drawable/exit"/>
     </FrameLayout>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center">
+        android:layout_marginLeft="@dimen/notification_margin_left"
+        android:layout_marginRight="@dimen/notification_margin_right">
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
                 android:id="@+id/noti_close_1"
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:layout_gravity="right"
                 android:scaleType="center"/>
         </FrameLayout>
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -99,19 +63,16 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_3"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -119,19 +80,16 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_4"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -139,19 +97,16 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_5"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -159,7 +114,6 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
     </LinearLayout>
@@ -167,18 +121,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:layout_marginTop="@dimen/notification_grid_divider"
+        android:layout_marginLeft="@dimen/notification_margin_left"
+        android:layout_marginRight="@dimen/notification_margin_right">
 
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_6"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -186,19 +140,16 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_7"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -206,19 +157,16 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_8"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -226,19 +174,16 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_9"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -246,19 +191,16 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
         <FrameLayout
             android:layout_width="@dimen/notification_grid_width"
             android:layout_height="@dimen/notification_grid_height"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginRight="@dimen/notification_grid_divider">
             <ImageView
                 android:id="@+id/noti_grid_10"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@mipmap/default_image"
                 android:scaleType="centerInside"/>
 
             <ImageView
@@ -266,67 +208,29 @@
                 android:layout_width="@dimen/notification_grid_exit_width"
                 android:layout_height="@dimen/notification_grid_exit_height"
                 android:layout_gravity="right"
-                android:layout_margin="@dimen/notification_grid_exit_margin"
                 android:scaleType="center"/>
         </FrameLayout>
 
     </LinearLayout>
 
-
-
-
-
-
-    <!---->
-    <!--<GridLayout-->
-        <!--android:id="@+id/noti_grid"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:columnCount="1"-->
-        <!--android:rowCount="2"-->
-        <!--android:layout_marginTop="@dimen/notification_top_margin">-->
-        <!--<LinearLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:layout_gravity="center"-->
-            <!--android:gravity="center"-->
-            <!--android:orientation="horizontal">-->
-
-        <!---->
-        <!--</LinearLayout>-->
-
-
-        <!---->
-
-
-
-
-    <!--</GridLayout>-->
-
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_gravity="right|center"
-        android:layout_marginTop="@dimen/notification_top_margin"
-        android:layout_marginRight="@dimen/notification_right_margin">
+        android:gravity="right"
+        android:layout_marginRight="@dimen/notification_action_margin_right">
 
-        <TextView
+        <ImageView
             android:id="@+id/noti_action_new"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/notification_dimen_text_margin_right"
-            android:text="@string/reset_description"
-            android:textSize="@dimen/notification_action_text_size"/>
+            android:src="@drawable/new_image"/>
 
-        <TextView
+        <ImageView
             android:id="@+id/noti_action_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/notification_dimen_text_margin_left"
-            android:layout_marginRight="@dimen/notification_dimen_action_text_margin_right"
-            android:text="@string/save_description"
-            android:textSize="@dimen/notification_action_text_size"/>
+            android:src="@drawable/save_image"/>
 
     </LinearLayout>
 
