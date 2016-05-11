@@ -85,7 +85,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     .build());
 
             if(captureCount != 0) {
-                recycle();
+                recycle(false);
                 showMessage(getResources().getString(R.string.exit_reset_app));
             } else
                 showMessage(getResources().getString(R.string.exit_app));
@@ -104,7 +104,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                 return START_STICKY;
             }
 
-            if (!recycle()) {
+            if (!recycle(false)) {
                 showMessage(getResources().getString(R.string.reset_fail));
             } else {
                 captureCount = 0;
@@ -176,7 +176,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                         getResources().getString(R.string.ga_action_capture_save))
                         .build());
 
-                recycle();
+                recycle(true);
                 showMessage(getResources().getString(R.string.save_success));
                 showComplexNotification(null);
 //                notificationManager.notify(NOTIFICATION_ID, notification);
@@ -220,7 +220,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_capture_over_capture))
                     .build());
 
-            recycle();
+            recycle(false);
 
             showMessage(getResources().getString(R.string.exception_out_of_memory));
             showComplexNotification(getResources().getString(R.string.exception_out_of_memory));
@@ -238,7 +238,7 @@ public class CaptureService extends Service implements ScreenshotListener{
         observer.stop();
 
         if(captureCount != 0)
-            recycle();
+            recycle(false);
     }
 
     @Nullable
@@ -319,7 +319,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     }
                 } else {
                     if(captureCount != 0)
-                        recycle();
+                        recycle(false);
                     showMessage(getResources().getString(R.string.exception_occur));
                     showComplexNotification(null);
 //                    notificationManager.notify(NOTIFICATION_ID, notification);
@@ -472,13 +472,19 @@ public class CaptureService extends Service implements ScreenshotListener{
         this.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
-    private boolean recycle() {
+    private boolean recycle(boolean newAction) {
         try {
             Iterator imagePathIter;
-            imagePathIter = imageCombineUtil.getImagePathArray().iterator();
-            while (imagePathIter.hasNext()) {
-                String deletePath = (String) imagePathIter.next();
-                imageCombineUtil.fileDelete(deletePath);
+            if(!newAction) {
+                imagePathIter = imageCombineUtil.getImagePathArray().iterator();
+                while (imagePathIter.hasNext()) {
+                    String deletePath = (String) imagePathIter.next();
+                    imageCombineUtil.fileDelete(deletePath);
+                }
+            } else {
+                for(int i = 0; i < imageCombineUtil.getImagePathArray().size()-1; i++) {
+                    imageCombineUtil.fileDelete(imageCombineUtil.getImagePathArray().get(i));
+                }
             }
 
             Iterator capturedPathIter = capturedUriArray.iterator();
@@ -504,5 +510,6 @@ public class CaptureService extends Service implements ScreenshotListener{
         else
             return Notification.PRIORITY_DEFAULT;
     }
+
 
 }
