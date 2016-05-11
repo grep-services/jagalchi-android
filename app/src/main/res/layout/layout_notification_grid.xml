@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/noti_grid_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:mipmap/sym_def_app_icon"
+        android:scaleType="center"/>
+
+     <ImageView
+        android:id="@+id/noti_grid_exit"
+        android:layout_width="@dimen/notification_grid_exit_width"
+        android:layout_height="@dimen/notification_grid_exit_height"
+        android:layout_margin="@dimen/notification_grid_exit_margin"
+         android:layout_alignParentRight="true"
+        android:src="@mipmap/close_imate_item_1"
+        android:scaleType="center"/>
+
+</RelativeLayout>

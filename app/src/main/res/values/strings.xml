@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">TenToOne</string>
-    <string name="capture_count">장</string>
-    <string name="init_app">TenToOne - 화면을 캡쳐하시면 자동으로 이미지가 합쳐집니다</string>
-    <string name="exit_app">TenToOne - 앱을 종료합니다</string>
-    <string name="exit_reset_app">TenToOne - 캡쳐된 파일을 삭제하고 앱을 종료합니다.</string>
+    <string name="app_description">텐투원 - 스크린샷 한장으로 모으기</string>
+    <string name="init_app">텐투원 - 화면을 캡쳐하시면 자동으로 이미지가 합쳐집니다</string>
+    <string name="exit_app">텐투원 - 앱을 종료합니다</string>
+    <string name="exit_reset_app">텐투원 - 캡쳐된 파일을 삭제하고 앱을 종료합니다.</string>
 
     <string name="exception_occur">예기치 않은 에러가 발생하여 기존의 이미지를 리셋합니다.</string>
     <string name="exception_out_of_memory">합칠수 있는 이미지의 용량을 초과했습니다.</string>
@@ -15,6 +15,7 @@
     <string name="capture_combine_success">합쳐진 캡쳐 이미지를 확인해보세요</string>
     <string name="capture_limit">이미지 합치기는 10장까지 가능합니다</string>
 
+    <string name="reset_description">새로하기</string>
     <string name="reset_success">리셋을 완료했습니다</string>
     <string name="reset_fail">리셋을 실패했습니다. 다시 시도해 주세요</string>
 
@@ -22,13 +23,12 @@
     <string name="undo_fail">되돌리기를 실패했습니다. 다시 시도해 주세요</string>
     <string name="undo_limit">되돌릴수 있는 이미지가 없습니다</string>
 
+    <string name="save_description">저장하기</string>
     <string name="save_success">갤러리에 저장하였습니다</string>
     <string name="save_fail">저장을 실패했습니다. 다시 시도해 주세요</string>
 
-    <string name="share_string">TenToOne - 합쳐진 이미지를 공유할 수 있습니다</string>
+    <string name="share_string">텐투원 - 합쳐진 이미지를 공유할 수 있습니다</string>
     <string name="share_pressbtn_pless">공유하시려면 공유 아이콘을 눌러주세요</string>
-    <string name="share_success"></string>
-    <string name="share_fail"></string>
 
     <!--Google Analytics-->
     <string name="ga_category_action">Action</string>
