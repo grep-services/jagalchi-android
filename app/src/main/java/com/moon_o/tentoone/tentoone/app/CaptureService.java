@@ -360,7 +360,7 @@ public class CaptureService extends Service implements ScreenshotListener{
         if(contentTitle == null)
             contentTitle = captureCount+resource.getString(R.string.capture_count_text);
         if(contentText == null)
-            contentText = resource.getString(R.string.capture_continue);
+            contentText = resource.getString(R.string.capture_view);
 
         if(pendingMap.isEmpty())
             setPendingIntent();

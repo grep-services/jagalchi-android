@@ -5,7 +5,7 @@
     <string name="capture_do">캡쳐를 시작해보세요</string>
     <string name="capture_count_text">장이 합쳐짐</string>
     <string name="capture_continue">이어서 캡처해보세요</string>
-    <string name="capture_view">터치해서 사진을 확인해보세요</string>
+    <string name="capture_view">사진을 보려면 누르세요</string>
 
     <!--<string name="exit_app">텐투원 - 앱을 종료합니다</string>-->
     <!--<string name="exit_reset_app">텐투원 - 캡쳐된 파일을 삭제하고 앱을 종료합니다.</string>-->
