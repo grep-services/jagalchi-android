@@ -11,6 +11,5 @@
         android:layout_height="300dp"
         android:layout_centerHorizontal="true"
         android:scaleType="fitXY"
-        android:visibility="invisible"
-        android:src="@color/colorPrimaryDark"/>
+        android:visibility="invisible"/>
 </RelativeLayout>

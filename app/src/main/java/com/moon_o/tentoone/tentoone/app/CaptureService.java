@@ -6,13 +6,16 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -50,11 +53,6 @@ public class CaptureService extends Service implements ScreenshotListener{
     private Map<String, PendingIntent> pendingMap = new HashMap<>();
     private int captureCount;
     private List<String> capturedUriArray = new ArrayList<>();
-    private List<Integer> closeImageItem = new ArrayList<>();
-    private List<Integer> gridImageItem = new ArrayList<>();
-
-
-    private RemoteViews notificationView;
     private Notification notification;
     private NotificationManager notificationManager;
 
@@ -75,8 +73,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_run_start))
                     .build());
 
-            showMessage(getResources().getString(R.string.init_app));
-            showComplexNotification(getResources().getString(R.string.init_app));
+            showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
 
         } else if(action.equals(NotificationAction.STOP_ACTION.getString())) {
             tracker.send(new HitBuilders.EventBuilder(
@@ -84,49 +81,43 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_run_stop))
                     .build());
 
-            if(captureCount != 0) {
+            if(captureCount != 0)
                 recycle(false);
-                showMessage(getResources().getString(R.string.exit_reset_app));
-            } else
-                showMessage(getResources().getString(R.string.exit_app));
 
             stopForeground(true);
             stopSelf();
 
         } else if(action.equals(NotificationAction.RESET_ACTION.getString())) {
 
-            if (captureCount == 0) {
-                showMessage(getResources().getString(R.string.capture_no_content));
+            if (captureCount == 0)
                 return START_STICKY;
-            }
+
             if (!imageCombineUtil.isExecutable()) {
                 showMessage(getResources().getString(R.string.file_writing));
                 return START_STICKY;
             }
 
-            if (!recycle(false)) {
-                showMessage(getResources().getString(R.string.reset_fail));
-            } else {
+            if (!recycle(true)) {
                 captureCount = 0;
 
                 tracker.send(new HitBuilders.EventBuilder(
                         getResources().getString(R.string.ga_category_action),
                         getResources().getString(R.string.ga_action_capture_delete))
                         .build());
-
-                showMessage(getResources().getString(R.string.reset_success));
             }
 
-            showComplexNotification(null);
-//            notificationManager.notify(NOTIFICATION_ID, notification);
+            showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
 
         } else if(action.equals(NotificationAction.UNDO_ACTION.getString())) {
 
-            if(captureCount == 0) {
-                showMessage(getResources().getString(R.string.undo_limit));
+            if(captureCount == 0)
+                return START_STICKY;
+
+            if(captureCount == 1) {
+                captureCount--;
+                showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
                 return START_STICKY;
             }
-            showMessage("삭제중입니다.");
 
             String undoPath = imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1);
             imageCombineUtil.fileDelete(undoPath);
@@ -150,44 +141,45 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             captureCount--;
 
-            showComplexNotification(getResources().getString(R.string.undo_success));
-//            notificationManager.notify(NOTIFICATION_ID, notification);
-
+            showDefaultNotification(null, null, null);
 
         } else if(action.equals(NotificationAction.SAVE_ACTION.getString())) {
 
-            if(captureCount == 0) {
-                showMessage(getResources().getString(R.string.capture_no_content));
+            if(captureCount == 0)
                 return START_STICKY;
-            }
+
             if(!imageCombineUtil.isExecutable()) {
                 showMessage(getResources().getString(R.string.file_writing));
-              return START_STICKY;
+                return START_STICKY;
             }
 
-            if (!imageCombineUtil.mediaStoreInsertImage(
+            String path = imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1);
+
+            if (imageCombineUtil.mediaStoreInsertImage(
                     this.getContentResolver(),
-                    imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1),
+                    path,
                     imageCombineUtil.getName())) {
-                showMessage(getResources().getString(R.string.save_fail));
-            } else {
                 tracker.send(new HitBuilders.EventBuilder(
                         getResources().getString(R.string.ga_category_action),
                         getResources().getString(R.string.ga_action_capture_save))
                         .build());
 
                 recycle(true);
-                showMessage(getResources().getString(R.string.save_success));
-                showComplexNotification(null);
-//                notificationManager.notify(NOTIFICATION_ID, notification);
+
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setDataAndType(Uri.parse("file://" + path), "image/*");
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(i);
+
+                showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
+
             }
+
 
         } else if(action.equals(NotificationAction.GALLERY_ACTION.getString())) {
 
-            if (captureCount == 0) {
-                showMessage(getResources().getString(R.string.capture_no_content));
+            if (captureCount == 0)
                 return START_STICKY;
-            }
 
             if (!imageCombineUtil.isExecutable()) {
                 showMessage(getResources().getString(R.string.file_writing));
@@ -209,9 +201,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_capture_limit))
                     .build());
 
-            showMessage(getResources().getString(R.string.capture_limit));
-            showComplexNotification(null);
-//            notificationManager.notify(NOTIFICATION_ID, notification);
+            showDefaultNotification(null, null, null);
 
         } else if(action.equals(NotificationAction.EXCEPTION_ACTION.getString())) {
 
@@ -222,9 +212,7 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             recycle(false);
 
-            showMessage(getResources().getString(R.string.exception_out_of_memory));
-            showComplexNotification(getResources().getString(R.string.exception_out_of_memory));
-//            notificationManager.notify(NOTIFICATION_ID, notification);
+            showDefaultNotification(null, null, null);
 
         }
 
@@ -292,8 +280,7 @@ public class CaptureService extends Service implements ScreenshotListener{
             }
         }
 
-        showComplexNotification(getResources().getString(R.string.capture_success));
-//        notificationManager.notify(NOTIFICATION_ID, notification);
+        showDefaultNotification(null, null, null);
     }
 
     private void init() {
@@ -320,83 +307,12 @@ public class CaptureService extends Service implements ScreenshotListener{
                 } else {
                     if(captureCount != 0)
                         recycle(false);
-                    showMessage(getResources().getString(R.string.exception_occur));
-                    showComplexNotification(null);
-//                    notificationManager.notify(NOTIFICATION_ID, notification);
+
+                    showDefaultNotification(null, null, null);
                 }
-                Log.e("EXCEPTION", t+"");
             }
         });
 
-    }
-
-    private RemoteViews buildNotificationItem(Map<String, PendingIntent> pendingMap) {
-        if (pendingMap.isEmpty())
-            throw new NullPointerException("PendingIntent elements is null");
-
-        RemoteViews view = new RemoteViews(getPackageName(), R.layout.notification_layout);
-
-        view.setOnClickPendingIntent(R.id.noti_action_exit, pendingMap.get(NotificationAction.STOP_ACTION.getString()));
-        view.setOnClickPendingIntent(R.id.noti_action_new, pendingMap.get(NotificationAction.RESET_ACTION.getString()));
-        view.setOnClickPendingIntent(R.id.noti_action_save, pendingMap.get(NotificationAction.SAVE_ACTION.getString()));
-        view.setTextViewText(R.id.noti_description, getResources().getString(R.string.app_description));
-
-        if(gridImageItem.size() == 0 && closeImageItem.size() == 0) {
-            closeImageItem.add(R.id.noti_close_1);
-            closeImageItem.add(R.id.noti_close_2);
-            closeImageItem.add(R.id.noti_close_3);
-            closeImageItem.add(R.id.noti_close_4);
-            closeImageItem.add(R.id.noti_close_5);
-            closeImageItem.add(R.id.noti_close_6);
-            closeImageItem.add(R.id.noti_close_7);
-            closeImageItem.add(R.id.noti_close_8);
-            closeImageItem.add(R.id.noti_close_9);
-            closeImageItem.add(R.id.noti_close_10);
-
-            gridImageItem.add(R.id.noti_grid_1);
-            gridImageItem.add(R.id.noti_grid_2);
-            gridImageItem.add(R.id.noti_grid_3);
-            gridImageItem.add(R.id.noti_grid_4);
-            gridImageItem.add(R.id.noti_grid_5);
-            gridImageItem.add(R.id.noti_grid_6);
-            gridImageItem.add(R.id.noti_grid_7);
-            gridImageItem.add(R.id.noti_grid_8);
-            gridImageItem.add(R.id.noti_grid_9);
-            gridImageItem.add(R.id.noti_grid_10);
-        }
-
-        closeImageVisibility(view, capturedUriArray.size()-1);
-        gridImageItemVisibility(view);
-
-        return view;
-    }
-
-    private void closeImageVisibility(RemoteViews view, Integer target) {
-        for(int elements : closeImageItem) {
-            view.setImageViewBitmap(elements, null);
-        }
-
-        if(target != null && target != -1)
-            view.setImageViewResource(closeImageItem.get(target), R.drawable.exit);
-    }
-    private void gridImageItemVisibility(RemoteViews view) {
-        int count = 0;
-        for(int elements : gridImageItem) {
-            if(count < capturedUriArray.size()) {
-
-                Bitmap bitmap = imageCombineUtil.createScaledBitmap(capturedUriArray.get(count),
-                        getResources().getDimensionPixelSize(R.dimen.notification_grid_width),
-                        getResources().getDimensionPixelSize(R.dimen.notification_grid_height));
-
-                view.setImageViewBitmap(elements, bitmap);
-                view.setOnClickPendingIntent(closeImageItem.get(count), pendingMap.get(NotificationAction.UNDO_ACTION.getString()));
-            } else {
-                view.setImageViewBitmap(elements, BitmapFactory.decodeResource(getResources(), R.drawable.default_image));
-                view.setOnClickPendingIntent(closeImageItem.get(count), null);
-            }
-
-            count++;
-        }
     }
 
     private void setPendingIntent() {
@@ -438,38 +354,44 @@ public class CaptureService extends Service implements ScreenshotListener{
         pendingMap.put(NotificationAction.LIMIT_ACTION.getString(), limitPending);
     }
 
-    private void showComplexNotification(String tickerText) {
+    private void showDefaultNotification(CharSequence tickerText, CharSequence contentTitle, CharSequence contentText) {
+        Resources resource = getResources();
+        if(contentTitle == null)
+            contentTitle = captureCount+resource.getString(R.string.capture_count_text);
+        if(contentText == null)
+            contentText = resource.getString(R.string.capture_continue);
+
         if(pendingMap.isEmpty())
             setPendingIntent();
 
-        if(notificationManager == null) {
-            notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        }
-        notificationView = null;
-        notificationView = buildNotificationItem(pendingMap);
+        if(notificationManager == null)
+            notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
         notification = null;
+
         notification = new NotificationCompat.Builder(this)
                 .setTicker(tickerText)
+                .setContentTitle(contentTitle)
+                .setContentText(contentText)
+                .setShowWhen(false)
+                .setLargeIcon(BitmapFactory.decodeResource(resource, R.mipmap.icon))
+//                .setColor(ContextCompat.getColor(this, R.color.text))
+                .setSmallIcon(R.drawable.small_icon_image)
                 .setContentIntent(pendingMap.get(NotificationAction.GALLERY_ACTION.getString()))
-                .setSmallIcon(R.mipmap.icon)
-                .setNumber(captureCount)
                 .setPriority(getHeadsUpCheckSdk())
+                .addAction(R.drawable.undo_image, resource.getString(R.string.undo_description), pendingMap.get(NotificationAction.UNDO_ACTION.getString()))
+                .addAction(R.drawable.reset_image, resource.getString(R.string.reset_description), pendingMap.get(NotificationAction.RESET_ACTION.getString()))
+                .addAction(R.drawable.save_image, resource.getString(R.string.save_description), pendingMap.get(NotificationAction.SAVE_ACTION.getString()))
+                .setDeleteIntent(test(this, NOTIFICATION_ID))
                 .build();
-        notification.bigContentView = notificationView;
 
         startForeground(NOTIFICATION_ID, notification);
+
     }
-
-
 
     public void showMessage(CharSequence message) {
-//        closeDialog();
+//        this.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
         ToastWrapper.showText(this, message);
-    }
-
-    public void closeDialog() {
-        this.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
     private boolean recycle(boolean newAction) {
@@ -502,6 +424,14 @@ public class CaptureService extends Service implements ScreenshotListener{
             e.printStackTrace();
         }
         return false;
+    }
+
+    private PendingIntent test(Context context, int notificationId) {
+        Intent intent = new Intent(context, CaptureService.class);
+        intent.putExtra("com.my.app.notificationid", NOTIFICATION_ID);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context.getApplicationContext(),
+                notificationId, intent, 0);
+        return pendingIntent;
     }
 
     private int getHeadsUpCheckSdk() {
