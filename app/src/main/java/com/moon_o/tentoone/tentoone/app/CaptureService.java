@@ -66,7 +66,7 @@ public class CaptureService extends Service implements ScreenshotListener{
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
 
-        if(action.equals(NotificationAction.START_ACTION.getString())) {
+        if(intent.getAction().equals(NotificationAction.START_ACTION.getString())) {
             init();
             tracker.send(new HitBuilders.EventBuilder(
                     getResources().getString(R.string.ga_category_run),
@@ -75,7 +75,7 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
 
-        } else if(action.equals(NotificationAction.STOP_ACTION.getString())) {
+        } else if(intent.getAction().equals(NotificationAction.STOP_ACTION.getString())) {
             tracker.send(new HitBuilders.EventBuilder(
                     getResources().getString(R.string.ga_category_run),
                     getResources().getString(R.string.ga_action_run_stop))
@@ -87,7 +87,7 @@ public class CaptureService extends Service implements ScreenshotListener{
             stopForeground(true);
             stopSelf();
 
-        } else if(action.equals(NotificationAction.RESET_ACTION.getString())) {
+        } else if(intent.getAction().equals(NotificationAction.RESET_ACTION.getString())) {
 
             if (captureCount == 0)
                 return START_STICKY;
@@ -108,7 +108,7 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
 
-        } else if(action.equals(NotificationAction.UNDO_ACTION.getString())) {
+        } else if(intent.getAction().equals(NotificationAction.UNDO_ACTION.getString())) {
 
             if(captureCount == 0)
                 return START_STICKY;
@@ -143,7 +143,7 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             showDefaultNotification(null, null, null);
 
-        } else if(action.equals(NotificationAction.SAVE_ACTION.getString())) {
+        } else if(intent.getAction().equals(NotificationAction.SAVE_ACTION.getString())) {
 
             if(captureCount == 0)
                 return START_STICKY;
@@ -176,7 +176,7 @@ public class CaptureService extends Service implements ScreenshotListener{
             }
 
 
-        } else if(action.equals(NotificationAction.GALLERY_ACTION.getString())) {
+        } else if(intent.getAction().equals(NotificationAction.GALLERY_ACTION.getString())) {
 
             if (captureCount == 0)
                 return START_STICKY;
@@ -195,7 +195,7 @@ public class CaptureService extends Service implements ScreenshotListener{
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
 
-        } else if(action.equals(NotificationAction.LIMIT_ACTION.getString())) {
+        } else if(intent.getAction().equals(NotificationAction.LIMIT_ACTION.getString())) {
             tracker.send(new HitBuilders.EventBuilder(
                     getResources().getString(R.string.ga_category_action),
                     getResources().getString(R.string.ga_action_capture_limit))
@@ -203,7 +203,7 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             showDefaultNotification(null, null, null);
 
-        } else if(action.equals(NotificationAction.EXCEPTION_ACTION.getString())) {
+        } else if(intent.getAction().equals(NotificationAction.EXCEPTION_ACTION.getString())) {
 
             tracker.send(new HitBuilders.EventBuilder(
                     getResources().getString(R.string.ga_category_action),
@@ -317,33 +317,33 @@ public class CaptureService extends Service implements ScreenshotListener{
 
     private void setPendingIntent() {
 
-        Intent galleryIntent = new Intent(this, CaptureService.class);
+        Intent galleryIntent = new Intent(getApplicationContext(), CaptureService.class);
         galleryIntent.setAction(NotificationAction.GALLERY_ACTION.getString());
-        PendingIntent galleryPending = PendingIntent.getService(this, 0, galleryIntent, 0);
+        PendingIntent galleryPending = PendingIntent.getService(this, 0, galleryIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent stopIntent = new Intent(this, CaptureService.class);
+        Intent stopIntent = new Intent(getApplicationContext(), CaptureService.class);
         stopIntent.setAction(NotificationAction.STOP_ACTION.getString());
-        PendingIntent stopPending = PendingIntent.getService(this, 0, stopIntent, 0);
+        PendingIntent stopPending = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent resetIntent = new Intent(this, CaptureService.class);
+        Intent resetIntent = new Intent(getApplicationContext(), CaptureService.class);
         resetIntent.setAction(NotificationAction.RESET_ACTION.getString());
-        PendingIntent resetPending = PendingIntent.getService(this, 0 , resetIntent, 0);
+        PendingIntent resetPending = PendingIntent.getService(this, 0 , resetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent undoIntent = new Intent(this, CaptureService.class);
+        Intent undoIntent = new Intent(getApplicationContext(), CaptureService.class);
         undoIntent.setAction(NotificationAction.UNDO_ACTION.getString());
-        PendingIntent undoPending = PendingIntent.getService(this, 0, undoIntent, 0);
+        PendingIntent undoPending = PendingIntent.getService(this, 0, undoIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent saveIntent = new Intent(this, CaptureService.class);
+        Intent saveIntent = new Intent(getApplicationContext(), CaptureService.class);
         saveIntent.setAction(NotificationAction.SAVE_ACTION.getString());
-        PendingIntent savePending = PendingIntent.getService(this, 0, saveIntent, 0);
+        PendingIntent savePending = PendingIntent.getService(this, 0, saveIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent exceptionIntent = new Intent(this, CaptureService.class);
+        Intent exceptionIntent = new Intent(getApplicationContext(), CaptureService.class);
         exceptionIntent.setAction(NotificationAction.EXCEPTION_ACTION.getString());
-        PendingIntent exceptionPending = PendingIntent.getService(this, 0, exceptionIntent, 0);
+        PendingIntent exceptionPending = PendingIntent.getService(this, 0, exceptionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent limitIntent = new Intent(this, CaptureService.class);
+        Intent limitIntent = new Intent(getApplicationContext(), CaptureService.class);
         limitIntent.setAction(NotificationAction.LIMIT_ACTION.getString());
-        PendingIntent limitPending = PendingIntent.getService(this, 0, limitIntent, 0);
+        PendingIntent limitPending = PendingIntent.getService(this, 0, limitIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         pendingMap.put(NotificationAction.GALLERY_ACTION.getString(), galleryPending);
         pendingMap.put(NotificationAction.STOP_ACTION.getString(), stopPending);
@@ -355,6 +355,7 @@ public class CaptureService extends Service implements ScreenshotListener{
     }
 
     private void showDefaultNotification(CharSequence tickerText, CharSequence contentTitle, CharSequence contentText) {
+//        notificationManager.cancel(NOTIFICATION_ID);
         Resources resource = getResources();
         if(contentTitle == null)
             contentTitle = captureCount+resource.getString(R.string.capture_count_text);
@@ -365,7 +366,7 @@ public class CaptureService extends Service implements ScreenshotListener{
             setPendingIntent();
 
         if(notificationManager == null)
-            notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager = (NotificationManager)getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
         notification = null;
 
@@ -379,10 +380,9 @@ public class CaptureService extends Service implements ScreenshotListener{
                 .setSmallIcon(R.drawable.small_icon_image)
                 .setContentIntent(pendingMap.get(NotificationAction.GALLERY_ACTION.getString()))
                 .setPriority(getHeadsUpCheckSdk())
-                .addAction(R.drawable.undo_image, resource.getString(R.string.undo_description), pendingMap.get(NotificationAction.UNDO_ACTION.getString()))
                 .addAction(R.drawable.reset_image, resource.getString(R.string.reset_description), pendingMap.get(NotificationAction.RESET_ACTION.getString()))
                 .addAction(R.drawable.save_image, resource.getString(R.string.save_description), pendingMap.get(NotificationAction.SAVE_ACTION.getString()))
-                .setDeleteIntent(test(this, NOTIFICATION_ID))
+                .addAction(R.drawable.exit_image, resource.getString(R.string.exit_description), pendingMap.get(NotificationAction.STOP_ACTION.getString()))
                 .build();
 
         startForeground(NOTIFICATION_ID, notification);
@@ -426,19 +426,11 @@ public class CaptureService extends Service implements ScreenshotListener{
         return false;
     }
 
-    private PendingIntent test(Context context, int notificationId) {
-        Intent intent = new Intent(context, CaptureService.class);
-        intent.putExtra("com.my.app.notificationid", NOTIFICATION_ID);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context.getApplicationContext(),
-                notificationId, intent, 0);
-        return pendingIntent;
-    }
-
     private int getHeadsUpCheckSdk() {
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
             return Notification.PRIORITY_MAX;
         else
-            return Notification.PRIORITY_DEFAULT;
+            return Notification.PRIORITY_MAX;
     }
 
 

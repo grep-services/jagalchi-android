@@ -5,6 +5,7 @@
     <string name="capture_do">캡쳐를 시작해보세요</string>
     <string name="capture_count_text">장이 합쳐짐</string>
     <string name="capture_continue">이어서 캡처해보세요</string>
+    <string name="capture_view">터치해서 사진을 확인해보세요</string>
 
     <!--<string name="exit_app">텐투원 - 앱을 종료합니다</string>-->
     <!--<string name="exit_reset_app">텐투원 - 캡쳐된 파일을 삭제하고 앱을 종료합니다.</string>-->
@@ -19,18 +20,20 @@
     <!--<string name="capture_combine_success">합쳐진 캡쳐 이미지를 확인해보세요</string>-->
     <!--<string name="capture_limit">이미지 합치기는 10장까지 가능합니다</string>-->
 
-    <string name="reset_description">새로하기</string>
+    <string name="reset_description">지우기</string>
     <!--<string name="reset_success">리셋을 완료했습니다</string>-->
     <!--<string name="reset_fail">리셋을 실패했습니다. 다시 시도해 주세요</string>-->
 
-    <string name="undo_description">되돌리기</string>
+    <string name="undo_description">되돌</string>
     <!--<string name="undo_success">되돌리기를 성공했습니다</string>-->
     <!--<string name="undo_fail">되돌리기를 실패했습니다. 다시 시도해 주세요</string>-->
     <!--<string name="undo_limit">되돌릴수 있는 이미지가 없습니다</string>-->
 
-    <string name="save_description">저장하기</string>
+    <string name="save_description">저장</string>
     <!--<string name="save_success">갤러리에 저장하였습니다</string>-->
     <!--<string name="save_fail">저장을 실패했습니다. 다시 시도해 주세요</string>-->
+
+    <string name="exit_description">종료</string>
 
     <!--<string name="share_string">텐투원 - 합쳐진 이미지를 공유할 수 있습니다</string>-->
     <!--<string name="share_pressbtn_pless">공유하시려면 공유 아이콘을 눌러주세요</string>-->
