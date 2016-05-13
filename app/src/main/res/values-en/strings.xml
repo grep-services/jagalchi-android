@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">텐투원</string>
+    <string name="app_name">TenToOne</string>
     <string name="init_app">자동으로 이미지가 합쳐집니다</string>
     <string name="capture_do">캡쳐를 시작해보세요</string>
     <string name="capture_count_text">장이 합쳐짐</string>
@@ -23,5 +23,4 @@
     <string name="ga_category_run">Run</string>
     <string name="ga_action_run_start">Start</string>
     <string name="ga_action_run_stop">Stop</string>
-
 </resources>

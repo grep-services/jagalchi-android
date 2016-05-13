@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">TenToOne</string>
+    <string name="init_app">自動的に画像が結合されます</string>
+    <string name="capture_do">スクショをやってみてください</string>
+    <string name="capture_count_text">枚の画像が結合されました</string>
+    <string name="capture_view">イメージを表示するにはクリックしてください</string>
+
+    <string name="file_writing">ファイルを作成しています、少々お待ちください</string>
+    <string name="reset_description">削除</string>
+    <string name="undo_description">取り消し</string>
+    <string name="save_description">作成</string>
+    <string name="exit_description">終了</string>
+
+    <!--Google Analytics-->
+    <string name="ga_category_action">Action</string>
+    <string name="ga_action_capture_capturing">Capturing</string>
+    <string name="ga_action_capture_save">Save</string>
+    <string name="ga_action_capture_delete">Delete</string>
+    <string name="ga_action_capture_limit">Limit</string>
+    <string name="ga_action_capture_view">Image View</string>
+    <string name="ga_action_capture_over_capture">Over Capture</string>
+
+    <string name="ga_category_run">Run</string>
+    <string name="ga_action_run_start">Start</string>
+    <string name="ga_action_run_stop">Stop</string>
+</resources>
