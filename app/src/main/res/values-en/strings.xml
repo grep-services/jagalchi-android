@@ -1,15 +1,17 @@
 <resources>
-    <string name="app_name">TenToOne</string>
-    <string name="init_app">자동으로 이미지가 합쳐집니다</string>
-    <string name="capture_do">캡쳐를 시작해보세요</string>
-    <string name="capture_count_text">장이 합쳐짐</string>
-    <string name="capture_view">사진을 보려면 누르세요</string>
+    <string name="app_name">Ten-to-one</string>
 
-    <string name="file_writing">파일을 쓰는중입니다. 잠시후에 실행 주세요</string>
-    <string name="reset_description">지우기</string>
-    <string name="undo_description">되돌</string>
-    <string name="save_description">저장</string>
-    <string name="exit_description">종료</string>
+    <string name="init_app">It\'ll be combined automatically</string>
+    <string name="capture_do">Take a screenshot now</string>
+    <string name="capture_count_text">pics combined</string>
+    <string name="capture_continue">Continue capturing</string>
+    <string name="capture_view">Tap to view your picture</string>
+
+    <string name="file_writing">Now writing. Try again in a moment.</string>
+    <string name="reset_description">Clear</string>
+    <string name="undo_description">Undo</string>
+    <string name="save_description">Save</string>
+    <string name="exit_description">Quit</string>
 
     <!--Google Analytics-->
     <string name="ga_category_action">Action</string>
