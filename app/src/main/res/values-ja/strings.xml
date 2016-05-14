@@ -3,9 +3,9 @@
     <string name="init_app">自動的に画像が結合されます</string>
     <string name="capture_do">スクショをやってみてください</string>
     <string name="capture_count_text">枚の画像が結合されました</string>
-    <string name="capture_view">イメージを表示するにはクリックしてください</string>
+    <string name="capture_view">表示するにはクリックしてください</string>
 
-    <string name="file_writing">ファイルを作成しています、少々お待ちください</string>
+    <string name="file_writing">イメージを結合しています、少々お待ちください</string>
     <string name="reset_description">削除</string>
     <string name="undo_description">取り消し</string>
     <string name="save_description">作成</string>
