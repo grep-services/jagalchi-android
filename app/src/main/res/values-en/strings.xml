@@ -4,7 +4,6 @@
     <string name="init_app">It\'ll be combined automatically</string>
     <string name="capture_do">Take a screenshot now</string>
     <string name="capture_count_text">pics combined</string>
-    <string name="capture_continue">Continue capturing</string>
     <string name="capture_view">Tap to view your picture</string>
 
     <string name="file_writing">Now writing. Try again in a moment.</string>
