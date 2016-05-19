@@ -129,7 +129,7 @@ public class ImageCombineUtil {
         } finally {
             try {
                 bitmap = null;
-//                bitmap.recycle();
+                bitmap.recycle();
                 out.close();
             } catch (IOException e) {
                 e.printStackTrace();

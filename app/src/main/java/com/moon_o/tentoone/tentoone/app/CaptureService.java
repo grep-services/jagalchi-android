@@ -139,7 +139,7 @@ public class CaptureService extends Service implements ScreenshotListener{
             if(file.exists()) {
                 //file write 되자마자 삭제하는 경우 안되기 때문에 1초정도 멈춘다음 삭제해야됨!
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(1000);// @hochan.jo 이 부분 자체가 background에서 돌아가기 때문에 이렇게 한 것인지?
                     imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), file.getCanonicalPath());
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -260,6 +260,12 @@ public class CaptureService extends Service implements ScreenshotListener{
             captureCount++;
             capturedUriArray.add(uri.getPath());
             new ImageCombineProcessor(getApplicationContext(), imageCombineUtil.pathCreat(), null, uri.getPath(), true).execute();
+            /**
+             * @hochan.jo
+             * 
+             * AsyncTask execute할 때 4.0이었나 기준으로 parallel, serial 등으로 갈리다보니
+             * version 구분해가면서 execute해줘야 되었던거 같은데, 감안하고 작업한 것인지?
+             */
         } else if(captureCount < CAPTURE_LIMIT) {
             captureCount++;
             capturedUriArray.add(uri.getPath());
