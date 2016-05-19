@@ -8,9 +8,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
+
+import com.moon_o.tentoone.tentoone.app.CaptureService;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -27,7 +32,7 @@ public class ImageCombineUtil {
     private static ImageCombineUtil _instance;
 
     private final String BASE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Pictures/TenToOne/";
-    public final String MEDIA_EXTERNAL_PATH = MediaStore.Images.Media.EXTERNAL_CONTENT_URI.getPath();
+    public final static String MEDIA_EXTERNAL_PATH = MediaStore.Images.Media.EXTERNAL_CONTENT_URI.getPath();
 
     private List<String> imagePathArray = new ArrayList<>();
     private String name;
@@ -37,8 +42,7 @@ public class ImageCombineUtil {
     private ImageCombineUtil() {}
 
     public synchronized static ImageCombineUtil getInstance() {
-        if(_instance == null)
-            _instance = new ImageCombineUtil();
+        if(_instance == null) _instance = new ImageCombineUtil();
         return _instance;
     }
 
@@ -113,8 +117,8 @@ public class ImageCombineUtil {
     public void bitmapFileWrite(String path, Bitmap bitmap) {
         File backFile = new File(path);
         fileCreate(backFile);
-
         FileOutputStream out = null;
+
         try {
             out = new FileOutputStream(backFile, true);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 55, out);
@@ -124,15 +128,14 @@ public class ImageCombineUtil {
             e.printStackTrace();
         } finally {
             try {
-                bitmap.recycle();
+                bitmap = null;
+//                bitmap.recycle();
                 out.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-
-
 
     public void bitmapCombine(String combinedPath, String combinePath, Bitmap backupBitmap, Bitmap capturedBitmap) {
         setCombinedPath(combinedPath);

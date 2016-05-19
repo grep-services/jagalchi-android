@@ -4,12 +4,19 @@
     <string name="capture_do">캡쳐를 시작해보세요</string>
     <string name="capture_count_text">장이 모였습니다</string>
     <string name="capture_view">모아진 사진을 보려면 누르세요</string>
+    <string name="capture_limit">최대 10장까지 가능합니다</string>
 
     <string name="file_writing">사진을 모으는 중입니다. 잠시후에 실행 주세요</string>
     <string name="reset_description">지우기</string>
+    <string name="reset_success">모아진 이미지를 삭제하였습니다</string>
+
     <string name="undo_description">되돌리기</string>
+
     <string name="save_description">저장</string>
+    <string name="save_success">모아진 이미지를 저장했습니다</string>
+
     <string name="exit_description">종료</string>
+
 
     <!--Google Analytics-->
     <string name="ga_category_action">Action</string>

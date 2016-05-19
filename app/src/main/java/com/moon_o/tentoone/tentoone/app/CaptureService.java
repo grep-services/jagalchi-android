@@ -1,25 +1,31 @@
 package com.moon_o.tentoone.tentoone.app;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.moon_o.tentoone.R;
@@ -56,15 +62,20 @@ public class CaptureService extends Service implements ScreenshotListener{
     private Notification notification;
     private NotificationManager notificationManager;
 
+    public static boolean checkPermission(final Context context) {
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
     @Override
     public void onCreate() {
         tracker = ((AnalyticsApplication)getApplication()).getDefaultTracker();
+
         super.onCreate();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String action = intent.getAction();
 
         if(intent.getAction().equals(NotificationAction.START_ACTION.getString())) {
             init();
@@ -73,6 +84,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_run_start))
                     .build());
 
+            showMessage(getResources().getString(R.string.capture_do));
             showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
 
         } else if(intent.getAction().equals(NotificationAction.STOP_ACTION.getString())) {
@@ -105,7 +117,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                         getResources().getString(R.string.ga_action_capture_delete))
                         .build());
             }
-
+            showMessage(getResources().getString(R.string.reset_success));
             showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
 
         } else if(intent.getAction().equals(NotificationAction.UNDO_ACTION.getString())) {
@@ -171,6 +183,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(i);
 
+                showMessage(getResources().getString(R.string.save_success));
                 showDefaultNotification(getResources().getString(R.string.init_app), getResources().getString(R.string.capture_do), getResources().getString(R.string.init_app));
 
             }
@@ -201,6 +214,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                     getResources().getString(R.string.ga_action_capture_limit))
                     .build());
 
+            showMessage(getResources().getString(R.string.capture_limit));
             showDefaultNotification(null, null, null);
 
         } else if(intent.getAction().equals(NotificationAction.EXCEPTION_ACTION.getString())) {
@@ -245,17 +259,13 @@ public class CaptureService extends Service implements ScreenshotListener{
         if(captureCount == 0) {
             captureCount++;
             capturedUriArray.add(uri.getPath());
-            new ImageCombineProcessor(imageCombineUtil.pathCreat(), null, uri.getPath(), true).execute();
+            new ImageCombineProcessor(getApplicationContext(), imageCombineUtil.pathCreat(), null, uri.getPath(), true).execute();
         } else if(captureCount < CAPTURE_LIMIT) {
             captureCount++;
             capturedUriArray.add(uri.getPath());
             String combinedPath = imageCombineUtil.getImagePathArray().get(imageCombineUtil.getImagePathArray().size()-1);
-            new ImageCombineProcessor(imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
+            new ImageCombineProcessor(getApplicationContext(), imageCombineUtil.pathCreat(), combinedPath, uri.getPath(), false).execute();
         } else {
-            tracker.send(new HitBuilders.EventBuilder(
-                    getResources().getString(R.string.ga_category_action),
-                    getResources().getString(R.string.ga_action_capture_over_capture))
-                    .build());
 
             try {
                 File file = new File(uri.getPath());
@@ -284,6 +294,9 @@ public class CaptureService extends Service implements ScreenshotListener{
     }
 
     private void init() {
+
+
+
         int timeout_hour = 600;
         tracker.setScreenName(getClass().getSimpleName());
         tracker.setSessionTimeout(timeout_hour * 30);
@@ -292,6 +305,7 @@ public class CaptureService extends Service implements ScreenshotListener{
             .build());
 
         imageCombineUtil = ImageCombineUtil.getInstance();
+
         observer =  new ScreenshotObserver(this);
         observer.start();
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -376,6 +390,8 @@ public class CaptureService extends Service implements ScreenshotListener{
                 .setContentText(contentText)
                 .setShowWhen(false)
                 .setLargeIcon(BitmapFactory.decodeResource(resource, R.mipmap.icon))
+                .setVibrate(new long[]{500, 500})
+//                .setDefaults(Notification.DEFAULT_VIBRATE)
 //                .setColor(ContextCompat.getColor(this, R.color.text))
                 .setSmallIcon(R.drawable.small_icon_image)
                 .setContentIntent(pendingMap.get(NotificationAction.GALLERY_ACTION.getString()))
@@ -386,6 +402,7 @@ public class CaptureService extends Service implements ScreenshotListener{
                 .build();
 
         startForeground(NOTIFICATION_ID, notification);
+//        notificationManager.notify(NOTIFICATION_ID, notification);
 
     }
 
@@ -413,7 +430,8 @@ public class CaptureService extends Service implements ScreenshotListener{
 
             while (capturedPathIter.hasNext()) {
                 String deletePath = (String) capturedPathIter.next();
-                imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), deletePath);
+                imageCombineUtil.fileDelete(deletePath);
+//                imageCombineUtil.mediaStoreDeleteImage(this.getContentResolver(), deletePath);
             }
 
             captureCount = 0;
@@ -430,7 +448,7 @@ public class CaptureService extends Service implements ScreenshotListener{
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
             return Notification.PRIORITY_MAX;
         else
-            return Notification.PRIORITY_MAX;
+            return Notification.PRIORITY_DEFAULT;
     }
 
 
